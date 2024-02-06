@@ -8,7 +8,7 @@
 	onMounted(() => {
 		initFlowbite();
 		token.value = localStorage.getItem("authToken");
-		console.log(token.value);
+		// console.log(token.value);
 	});
 
 	const Logout = async () => {

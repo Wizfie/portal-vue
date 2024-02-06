@@ -12,6 +12,12 @@
 				<div>
 					<h1 class="font-medium text-3xl p-6">Teams</h1>
 
+					<div
+						class="p-4 border-2 border-gray-200 border-opacity-100 rounded-lg dark:border-gray-700 mt-5"
+					>
+						<h1>aaaa</h1>
+					</div>
+
 					<div class="relative overflow-x-auto shadow-md sm:rounded-lg p-4">
 						<div
 							class="flex items-center justify-between flex-column md:flex-row flex-wrap space-y-4 md:space-y-0 py-4 bg-white dark:bg-gray-900"
