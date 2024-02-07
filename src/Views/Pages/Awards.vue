@@ -10,13 +10,12 @@
 	const role = ref("");
 
 	onMounted(() => {
-		initFlowbite();
-
 		const userData = localStorage.getItem("userData");
 		if (userData) {
 			const parseJson = JSON.parse(userData);
 			role.value = parseJson.role;
 		}
+		initFlowbite();
 	});
 	const createAward = async () => {
 		try {
@@ -34,6 +33,9 @@
 				.then((response) => {
 					console.log(response.data);
 					alert(response.data);
+
+					nameAward.value = "";
+					description.value = "";
 				});
 		} catch (error) {
 			console.log("Error " + error);
@@ -51,9 +53,10 @@
 				<h1 class="text-2xl">Registration</h1>
 			</div>
 			<div
+				v-show="role === `ADMIN`"
 				class="p-4 border-2 border-gray-200 border-opacity-100 rounded-lg dark:border-gray-700 mt-5"
 			>
-				<div v-if="role === `admin`">
+				<div>
 					<!-- Modal toggle -->
 					<button
 						data-modal-target="awards-modal"
@@ -68,7 +71,7 @@
 					<div
 						data-modal-backdrop="static"
 						id="awards-modal"
-						tabindex="-1"
+						tabindex="1"
 						aria-hidden="true"
 						class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full"
 					>
