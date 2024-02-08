@@ -16,7 +16,7 @@
 		try {
 			if (username.value !== "" && password.value !== "") {
 				const response = await axios.post("/auth/login", userLogin);
-				console.log("Mengirim data login:", userLogin);
+				// console.log("Mengirim data login:", userLogin);
 
 				// Simpan token ke Vuex
 				const token = response.data.token;
@@ -36,7 +36,12 @@
 				await router.push("/dashboard");
 			}
 		} catch (error) {
-			console.error("Login Error", error);
+			if (error.response.status === 401) {
+				alert("Username or password wrong");
+			} else {
+				alert("Server error");
+				console.error("Login Error", error);
+			}
 		}
 	};
 </script>
