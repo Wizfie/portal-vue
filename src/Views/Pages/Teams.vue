@@ -11,12 +11,14 @@
 	let idTeam = ref(null);
 	let memberName = ref("");
 	let memberPosition = ref("");
+	let teamWithMembers = ref([]);
 	const userData = ref("");
 	const store = useStore();
 	onMounted(() => {
 		userData.value = store.getters.getUserData;
 		getAwarding();
 		getTeam();
+		getTeamWithMembers();
 	});
 
 	const filteredTeam = computed(() => {
@@ -30,7 +32,7 @@
 	};
 
 	const getTeam = async () => {
-		axios.get("/get-all-team").then((response) => {
+		axios.get("/team/get-all").then((response) => {
 			teams.value = response.data;
 		});
 	};
@@ -43,11 +45,12 @@
 		};
 		try {
 			// console.log(teamData);
-			axios.post("/create-team", teamData).then((response) => {
+			axios.post("/team/create", teamData).then((response) => {
 				console.log(response.statusText);
 				nameTeam.value = "";
 				idAward.value = null;
 				alert("OK");
+				getTeamWithMembers();
 			});
 		} catch (error) {
 			console.log("error " + error);
@@ -64,15 +67,27 @@
 
 		try {
 			// console.log(memberData);
-			axios.post("/add-member-team", memberData).then((response) => {
+			axios.post("/member/add", memberData).then((response) => {
 				console.log(response.data);
 
 				alert("Succes Added ");
 				memberName.value = "";
 				memberPosition.value = "";
+				getTeamWithMembers();
 			});
 		} catch (error) {
 			console.error("Error add member " + error);
+		}
+	};
+
+	const getTeamWithMembers = async () => {
+		try {
+			await axios.get("team/with-members").then((response) => {
+				console.log(response.data);
+				teamWithMembers.value = response.data;
+			});
+		} catch (error) {
+			console.error("error get Team with member" + error);
 		}
 	};
 </script>
@@ -312,6 +327,10 @@
 														</label>
 														<input
 															v-model="memberPosition"
+															@input="
+																memberPosition =
+																	$event.target.value.toUpperCase()
+															"
 															type="text"
 															name="position-member"
 															id="position-member"
@@ -346,30 +365,33 @@
 							<tr>
 								<th scope="col" class="px-6 py-3">No</th>
 								<th scope="col" class="px-6 py-3">Team Name</th>
-								<th scope="col" class="px-6 py-3">Award</th>
+								<th scope="col" class="px-6 py-3">Team Member</th>
 								<th scope="col" class="px-6 py-3">
-									<span class="sr-only">Edit</span>
+									<span class="sr-only">View</span>
 								</th>
 							</tr>
 						</thead>
 						<tbody>
 							<tr
+								v-for="(team, index) in teamWithMembers"
+								:key="index"
 								class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
 							>
-								<td class="px-6 py-4">1</td>
+								<td class="px-6 py-4">{{ index + 1 }}</td>
 								<th
 									scope="row"
 									class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
 								>
-									Apple MacBook Pro 17"
+									{{ team.nameTeam }}
 								</th>
-								<td class="px-6 py-4">Silver</td>
-								<td class="px-6 py-4 text-right">
-									<a
-										href="#"
+								<td class="px-6 py-4">
+									<button
+										type="button"
 										class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-										>Edit</a
 									>
+										View
+									</button>
+									<!-- Modal view -->
 								</td>
 							</tr>
 						</tbody>
