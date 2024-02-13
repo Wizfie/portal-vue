@@ -17,12 +17,15 @@
 	onMounted(() => {
 		userData.value = store.getters.getUserData;
 		getAwarding();
-		getTeam();
 		getTeamWithMembers();
 	});
 
 	const filteredTeam = computed(() => {
-		return teams.value.filter((team) => team.idUser === userData.value.id);
+		console.log("Teams:", teams.value);
+		console.log("User Data:", userData.value);
+		return teamWithMembers.value.filter(
+			(team) => team.idUser == userData.value.id
+		);
 	});
 
 	const getAwarding = async () => {
@@ -31,26 +34,17 @@
 		});
 	};
 
-	const getTeam = async () => {
-		axios.get("/team/get-all").then((response) => {
-			teams.value = response.data;
-		});
-	};
-
 	const createTeam = async () => {
 		const teamData = {
 			nameTeam: nameTeam.value,
-			idAward: idAward.value,
 			idUser: userData.value.id,
 		};
 		try {
 			// console.log(teamData);
 			axios.post("/team/create", teamData).then((response) => {
-				console.log(response.statusText);
 				nameTeam.value = "";
-				idAward.value = null;
 				alert("OK");
-				getTeamWithMembers();
+				getTeam();
 			});
 		} catch (error) {
 			console.log("error " + error);
@@ -63,6 +57,7 @@
 			nameMember: memberName.value,
 			position: memberPosition.value,
 			idTeam: idTeam.value,
+			idAwards: idAward.value,
 		};
 
 		try {
@@ -73,6 +68,7 @@
 				alert("Succes Added ");
 				memberName.value = "";
 				memberPosition.value = "";
+
 				getTeamWithMembers();
 			});
 		} catch (error) {
@@ -184,28 +180,6 @@
 															required
 														/>
 													</div>
-													<div class="col-span-2">
-														<label
-															for="countries"
-															class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-															>Select an Awarding</label
-														>
-														<select
-															id="countries"
-															required
-															v-model="idAward"
-															class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-														>
-															<option disabled value="Select Award"></option>
-															<option
-																v-for="award in awards"
-																:key="award.id"
-																:value="award.id"
-															>
-																{{ award.nameAward }}
-															</option>
-														</select>
-													</div>
 												</div>
 												<button
 													type="submit"
@@ -281,7 +255,7 @@
 														<label
 															for="countries"
 															class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-															>Select an Team</label
+															>Select a Team</label
 														>
 														<select
 															id="countries"
@@ -295,8 +269,29 @@
 																:key="team.id"
 																:value="team.id"
 															>
-																{{ team.nameTeam }} -
-																{{ team.awards.nameAward }}
+																{{ team.nameTeam }}
+															</option>
+														</select>
+													</div>
+													<div class="col-span-2">
+														<label
+															for="countries"
+															class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+															>Select an Awarding</label
+														>
+														<select
+															id="countries"
+															required
+															v-model="idAward"
+															class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+														>
+															<option disabled value="Select Award"></option>
+															<option
+																v-for="award in awards"
+																:key="award.id"
+																:value="award.id"
+															>
+																{{ award.nameAward }}
 															</option>
 														</select>
 													</div>
@@ -373,7 +368,7 @@
 						</thead>
 						<tbody>
 							<tr
-								v-for="(team, index) in teamWithMembers"
+								v-for="(team, index) in filteredTeam"
 								:key="index"
 								class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
 							>
@@ -385,12 +380,13 @@
 									{{ team.nameTeam }}
 								</th>
 								<td class="px-6 py-4">
-									<button
+									<router-link
+										:to="{ name: 'members', params: { teamId: team.idTeam } }"
 										type="button"
 										class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
 									>
 										View
-									</button>
+									</router-link>
 									<!-- Modal view -->
 								</td>
 							</tr>

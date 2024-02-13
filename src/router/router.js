@@ -8,6 +8,7 @@ import dashboard from "../Views/Pages/Dashboard.vue";
 import isAuthenticated from "./routeGuards";
 import profile from "../Views/Pages/Profile.vue";
 import teams from "../Views/Pages/Teams.vue";
+import members from "../Views/Pages/Members-Team.vue";
 import awards from "../Views/Pages/Awards.vue";
 
 const routes = [
@@ -39,6 +40,11 @@ const routes = [
 		name: "teams",
 		component: teams,
 		beforeEnter: isAuthenticated,
+	},
+	{
+		path: "/teams/members/:teamId",
+		name: "members",
+		component: members,
 	},
 	{
 		path: "/awards",
