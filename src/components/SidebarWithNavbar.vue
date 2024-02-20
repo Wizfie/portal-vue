@@ -222,7 +222,7 @@
 				</li>
 				<li>
 					<router-link
-						to="/awards"
+						to="/event"
 						class="flex items-center p-2 text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 group"
 					>
 						<svg
@@ -240,9 +240,67 @@
 								d="M19 7h1v12c0 .6-.4 1-1 1h-2a1 1 0 0 1-1-1V5c0-.6-.4-1-1-1H5a1 1 0 0 0-1 1v14c0 .6.4 1 1 1h11.5M7 14h6m-6 3h6m0-10h.5m-.5 3h.5M7 7h3v3H7V7Z"
 							/>
 						</svg>
-						<span class="flex-1 ms-3 whitespace-nowrap">Awards</span>
+						<span class="flex-1 ms-3 whitespace-nowrap">Event</span>
 					</router-link>
 				</li>
+				<!-- <li>
+					<button
+						type="button"
+						class="flex items-center w-full p-2 text-base text-gray-900 transition duration-75 rounded-lg group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+						aria-controls="dropdown-example"
+						data-collapse-toggle="dropdown-example"
+					>
+						<svg
+							class="w-5 h-5 text-gray-800 dark:text-white"
+							aria-hidden="true"
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 24 24"
+						>
+							<path
+								stroke="currentColor"
+								stroke-width="2"
+								d="M11 5.1a1 1 0 0 1 2 0l1.7 4c.1.4.4.6.8.6l4.5.4a1 1 0 0 1 .5 1.7l-3.3 2.8a1 1 0 0 0-.3 1l1 4a1 1 0 0 1-1.5 1.2l-3.9-2.3a1 1 0 0 0-1 0l-4 2.3a1 1 0 0 1-1.4-1.1l1-4.1c.1-.4 0-.8-.3-1l-3.3-2.8a1 1 0 0 1 .5-1.7l4.5-.4c.4 0 .7-.2.8-.6l1.8-4Z"
+							/>
+						</svg>
+
+						<span class="flex-1 ms-3 text-left rtl:text-right whitespace-nowrap"
+							>Event</span
+						>
+						<svg
+							class="w-3 h-3"
+							aria-hidden="true"
+							xmlns="http://www.w3.org/2000/svg"
+							fill="none"
+							viewBox="0 0 10 6"
+						>
+							<path
+								stroke="currentColor"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-width="2"
+								d="m1 1 4 4 4-4"
+							/>
+						</svg>
+					</button>
+					<ul id="dropdown-example" class="hidden py-2 space-y-2">
+						<li>
+							<a
+								href="#"
+								class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+								>QCC</a
+							>
+						</li>
+						<li>
+							<a
+								href="#"
+								class="flex items-center w-full p-2 text-gray-900 transition duration-75 rounded-lg pl-11 group hover:bg-gray-100 dark:text-white dark:hover:bg-gray-700"
+								>SS</a
+							>
+						</li>
+					</ul>
+				</li> -->
+				<li></li>
 				<li>
 					<router-link
 						to="/profile"

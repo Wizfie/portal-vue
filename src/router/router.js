@@ -9,7 +9,7 @@ import isAuthenticated from "./routeGuards";
 import profile from "../Views/Pages/Profile.vue";
 import teams from "../Views/Pages/Teams.vue";
 import members from "../Views/Pages/Members-Team.vue";
-import awards from "../Views/Pages/Awards.vue";
+import event from "../Views/Pages/Event.vue";
 
 const routes = [
 	{
@@ -47,9 +47,9 @@ const routes = [
 		component: members,
 	},
 	{
-		path: "/awards",
-		name: "awards",
-		component: awards,
+		path: "/event",
+		name: "event",
+		component: event,
 		beforeEnter: isAuthenticated,
 	},
 ];
