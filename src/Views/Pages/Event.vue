@@ -17,6 +17,10 @@
 		steps.value.push({ name: "", startDate: "", endDate: "", description: "" });
 	};
 
+	const removeStep = () => {
+		steps.value.pop();
+	};
+
 	onMounted(() => {
 		const userData = localStorage.getItem("userData");
 		if (userData) {
@@ -25,6 +29,12 @@
 		}
 		initFlowbite();
 	});
+
+	const resetForm = () => {
+		eventName.value = "";
+		eventYear.value = "";
+		steps.value = [];
+	};
 
 	const createEvent = async () => {
 		try {
@@ -38,7 +48,7 @@
 					Authorization: token,
 				},
 			});
-			const eventId = eventResponse.data.id;
+			const eventId = eventResponse.data.eventId;
 			console.log(eventResponse.data);
 			console.log(eventId);
 
@@ -57,12 +67,23 @@
 				});
 			}
 
-			// Reset form
-			eventName.value = "";
-			eventYear.value = "";
-			steps.value = [];
+			const emailData = {
+				to: "wizfiee@gmail.com",
+				from: "wizfie@outlook.com",
+				subject: "Event Baru",
+				name: "Kadal",
+				text: `Event ${eventName.value} Sudah Buka Pendaftarannya silahkan cek di Web `,
+			};
 
-			console.log("Event and steps created successfully");
+			const email = await axios.post("/email/send", emailData, {
+				headers: {
+					Authorization: token,
+				},
+			});
+			console.log(email.data);
+			// Reset form
+			resetForm();
+			alert("Event and steps created successfully");
 		} catch (error) {
 			console.error("Error:", error);
 			// Handle error
@@ -116,6 +137,7 @@
 									</h3>
 									<button
 										type="button"
+										@click="resetForm"
 										class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
 										data-modal-toggle="awards-modal"
 									>
@@ -154,7 +176,7 @@
 												id="name-event"
 												class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
 												placeholder="Name Event"
-												required=""
+												required
 											/>
 										</div>
 										<div class="col-span-2">
@@ -189,6 +211,7 @@
 											>
 											<input
 												v-model="step.name"
+												required
 												type="text"
 												id="step"
 												class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -204,6 +227,7 @@
 													</label>
 													<input
 														v-model="step.startDate"
+														required
 														type="date"
 														id="start-date"
 														class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -218,6 +242,7 @@
 													</label>
 													<input
 														v-model="step.endDate"
+														required
 														type="date"
 														id="end-date"
 														class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -232,6 +257,7 @@
 											>
 											<textarea
 												v-model="step.description"
+												required
 												id="description"
 												class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
 												placeholder="Description"
@@ -244,13 +270,19 @@
 											class="text-white inline-flex items-center mb-3 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
 											@click.prevent="addStep"
 										>
-											Add Step
+											Add
+										</button>
+										<button
+											class="text-white inline-flex items-center mb-3 ms-2 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+											@click.prevent="removeStep"
+										>
+											Remove
 										</button>
 									</div>
 									<hr class="mb-3" />
 
 									<!-- Daftar Langkah yang Sudah Ditambahkan -->
-									<div v-if="steps.length > 0" class="mt-4">
+									<!-- <div v-if="steps.length > 0" class="mt-4">
 										<h2 class="text-lg font-semibold">Steps Added:</h2>
 										<ul>
 											<li v-for="(step, index) in steps" :key="index">
@@ -261,7 +293,7 @@
 												<hr class="my-2" />
 											</li>
 										</ul>
-									</div>
+									</div> -->
 
 									<button
 										type="submit"
