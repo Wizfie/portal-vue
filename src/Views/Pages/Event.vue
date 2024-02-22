@@ -43,7 +43,7 @@
 				eventName: eventName.value,
 				eventYear: eventYear.value,
 			};
-			const eventResponse = await axios.post("/create-event", eventData, {
+			const eventResponse = await axios.post("event/create-event", eventData, {
 				headers: {
 					Authorization: token,
 				},
