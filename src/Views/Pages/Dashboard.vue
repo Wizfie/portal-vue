@@ -14,7 +14,7 @@
 					<h2 class="text-xl font-semibold mb-4">
 						{{ event.event.eventName }}
 					</h2>
-					<ol class="items-center sm:flex">
+					<ol class="items-center sm:flex flex-wrap">
 						<li
 							v-for="(step, stepIndex) in event.steps"
 							:key="stepIndex"
@@ -22,13 +22,13 @@
 						>
 							<div class="flex items-center">
 								<div
-									class="z-10 flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full ring-0 ring-white dark:bg-blue-900 sm:ring-8 dark:ring-gray-900 shrink-0"
+									class="z-10 flex mt-1 items-center justify-center w-6 h-6 bg-blue-100 rounded-full ring-0 ring-white dark:bg-blue-900 sm:ring-8 dark:ring-gray-900 shrink-0"
 									:class="{
-										'bg-green-100': isWithinDateRange(
+										'text-green-500': isWithinDateRange(
 											step.startDate,
 											step.endDate
 										),
-										'bg-gray-200': !isWithinDateRange(
+										'text-gray-500': !isWithinDateRange(
 											step.startDate,
 											step.endDate
 										),
@@ -36,6 +36,16 @@
 								>
 									<svg
 										class="w-2.5 h-2.5 text-blue-800 dark:text-blue-300"
+										:class="{
+											'text-green-500': isWithinDateRange(
+												step.startDate,
+												step.endDate
+											),
+											'text-gray-500': !isWithinDateRange(
+												step.startDate,
+												step.endDate
+											),
+										}"
 										aria-hidden="true"
 										xmlns="http://www.w3.org/2000/svg"
 										fill="currentColor"
@@ -78,10 +88,11 @@
 											step.endDate
 										),
 									}"
-									>{{ step.startDate }} - {{ step.endDate }}</time
+									>{{ reverseDateFormat(step.startDate) }} -
+									{{ reverseDateFormat(step.endDate) }}</time
 								>
 								<p
-									class="text-base font-normal text-gray-500 dark:text-gray-500"
+									class="text-base font-normal text-gray-500 dark:text-gray-500 description"
 									:class="{
 										'text-green-500': isWithinDateRange(
 											step.startDate,
@@ -107,7 +118,7 @@
 					<h2 class="text-xl font-semibold mb-4">
 						{{ event.event.eventName }}
 					</h2>
-					<ol class="items-center sm:flex">
+					<ol class="items-center sm:flex flex flex-wrap">
 						<li
 							v-for="(step, stepIndex) in event.steps"
 							:key="stepIndex"
@@ -152,10 +163,11 @@
 
 								<time
 									class="block mb-2 text-sm font-normal leading-none text-gray-500 dark:text-gray-500"
-									>{{ step.startDate }} - {{ step.endDate }}</time
+									>{{ reverseDateFormat(step.startDate) }} -
+									{{ reverseDateFormat(step.endDate) }}</time
 								>
 								<p
-									class="text-base font-normal text-gray-500 dark:text-gray-500"
+									class="text-base font-normal text-gray-500 dark:text-gray-500 description"
 								>
 									{{ step.description }}
 								</p>
@@ -206,6 +218,16 @@
 			currentDate >= new Date(startDate) && currentDate <= new Date(endDate)
 		);
 	};
+
+	const reverseDateFormat = (dateString) => {
+		const dateParts = dateString.split("-");
+		return `${dateParts[2]}/${dateParts[1]}/${dateParts[0]}`;
+	};
 </script>
 
-<style></style>
+<style>
+	.description {
+		word-wrap: break-word;
+		word-break: break-all;
+	}
+</style>
