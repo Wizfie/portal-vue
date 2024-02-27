@@ -13,7 +13,15 @@
 	const eventYear = ref("");
 	const steps = ref([]);
 	const events = ref([]);
-	const eventId = ref("");
+	const teams = ref("");
+	// Registeam
+	const memberName = ref("");
+	const memberPosition = ref("");
+	const selectedEvent = ref("");
+	const selectedTeam = ref("");
+
+	const currentDate = new Date();
+	const year = currentDate.getFullYear().toString();
 
 	// Fungsi untuk menambahkan langkah-langkah baru
 	const addStep = () => {
@@ -25,6 +33,7 @@
 	};
 
 	onMounted(() => {
+		initFlowbite();
 		const userData = localStorage.getItem("userData");
 		if (userData) {
 			const parseJson = JSON.parse(userData);
@@ -32,8 +41,8 @@
 			username.value = parseJson.username;
 		}
 
+		getTeams();
 		getEvents();
-		initFlowbite();
 	});
 
 	const resetForm = () => {
@@ -41,6 +50,7 @@
 		eventYear.value = "";
 		steps.value = [];
 	};
+	1;
 
 	const createEvent = async () => {
 		try {
@@ -91,16 +101,46 @@
 			resetForm();
 			alert("Event and steps created successfully");
 		} catch (error) {
-			console.error("Error:", error);
+			console.error("Create Team:", error);
 			// Handle error
+		}
+	};
+
+	const registerTeam = async () => {
+		try {
+			const RegisData = {
+				memberName: memberName.value,
+				memberPosition: memberPosition.value,
+				event: {
+					eventId: selectedEvent.value,
+				},
+				team: {
+					teamId: selectedTeam.value,
+				},
+			};
+			const regist = await axios.post("/member/create", RegisData);
+			console.log(regist.data);
+			alert("Data Saved");
+		} catch (error) {
+			console.error("Registeam" + error);
 		}
 	};
 
 	const getEvents = () => {
 		axios.get("/event/get-event").then((response) => {
-			console.log(response.data);
-			events.value = response.data.map((item) => item.event);
+			const filteredEvents = response.data.filter(
+				(item) => item.event.eventYear === year
+			);
+
+			events.value = filteredEvents.map((item) => item.event);
 			console.log(events.value);
+		});
+	};
+
+	const getTeams = () => {
+		axios.get("/team/get-all").then((response) => {
+			teams.value = response.data;
+			console.log(teams.value);
 		});
 	};
 </script>
@@ -353,7 +393,7 @@
 									<h3
 										class="text-lg font-semibold text-gray-900 dark:text-white"
 									>
-										Add New Team Member
+										Add Team & Member
 									</h3>
 									<button
 										type="button"
@@ -379,47 +419,47 @@
 									</button>
 								</div>
 								<!-- Modal body -->
-								<form @submit.prevent="addMemberTeam" class="p-4 md:p-5">
+								<form @submit.prevent="registerTeam" class="p-4 md:p-5">
 									<div class="grid gap-4 mb-4 grid-cols-2">
 										<div class="col-span-2">
 											<label
-												for="countries"
+												for="selet-team"
 												class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
 												>Select a Team</label
 											>
 											<select
-												id="countries"
+												id="selet-team"
 												required
-												v-model="idTeam"
+												v-model="selectedTeam"
 												class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
 											>
-												<option disabled value="Select Award"></option>
+												<option disabled>Select Team</option>
 												<option
-													v-for="team in filteredTeam"
-													:key="team.id"
-													:value="team.id"
+													v-for="team in teams"
+													:key="team.teamId"
+													:value="team.teamId"
 												>
-													{{ team.nameTeam }}
+													{{ team.teamName }}
 												</option>
 											</select>
 										</div>
 										<div class="col-span-2">
 											<label
-												for="countries"
+												for="select-event"
 												class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
 												>Select an Event</label
 											>
 											<select
-												id="countries"
+												id="select-event"
 												required
-												v-model="eventId"
+												v-model="selectedEvent"
 												class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
 											>
-												<option disabled value="Select Award"></option>
+												<option disabled>Select Event</option>
 												<option
 													v-for="event in events"
 													:key="event.eventId"
-													:value="eventId"
+													:value="event.eventId"
 												>
 													{{ event.eventName }}
 												</option>
@@ -433,8 +473,8 @@
 											</label>
 											<input
 												v-model="memberName"
-												@input="memberName = $event.target.value.toUpperCase()"
 												type="text"
+												@input="memberName = $event.target.value.toUpperCase()"
 												name="name-member"
 												id="name-member"
 												class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
