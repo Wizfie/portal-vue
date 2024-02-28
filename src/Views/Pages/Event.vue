@@ -13,16 +13,16 @@
 	const eventYear = ref("");
 	const steps = ref([]);
 	const events = ref([]);
-	const teams = ref("");
-	// Registeam
-	const memberName = ref("");
-	const memberPosition = ref("");
-	const selectedEvent = ref("");
-	const selectedTeam = ref("");
+	const filteredTeams = ref([]);
+	const stageName = ref("");
+	const stageDesc = ref("");
+	const eventIdStage = ref("");
 
 	const currentDate = new Date();
-	const year = currentDate.getFullYear().toString();
-
+	const currentYear = currentDate.getFullYear().toString();
+	// const currentMonth = (currentDate.getMonth() + 1).toString().padStart(2, "0");
+	// const currentDay = currentDate.getDate().toString().padStart(2, "0");
+	// const currentDateString = `${currentYear}-${currentMonth}-${currentDay}`;
 	// Fungsi untuk menambahkan langkah-langkah baru
 	const addStep = () => {
 		steps.value.push({ name: "", startDate: "", endDate: "", description: "" });
@@ -40,9 +40,8 @@
 			role.value = parseJson.role;
 			username.value = parseJson.username;
 		}
-
-		getTeams();
 		getEvents();
+		getTeams();
 	});
 
 	const resetForm = () => {
@@ -50,7 +49,6 @@
 		eventYear.value = "";
 		steps.value = [];
 	};
-	1;
 
 	const createEvent = async () => {
 		try {
@@ -102,34 +100,30 @@
 			alert("Event and steps created successfully");
 		} catch (error) {
 			console.error("Create Team:", error);
-			// Handle error
 		}
 	};
 
-	const registerTeam = async () => {
+	const createStage = async () => {
+		//
 		try {
-			const RegisData = {
-				memberName: memberName.value,
-				memberPosition: memberPosition.value,
+			const stageData = {
+				stageName: stageName.value,
+				description: stageDesc.value,
 				event: {
-					eventId: selectedEvent.value,
-				},
-				team: {
-					teamId: selectedTeam.value,
+					eventId: eventIdStage.value,
 				},
 			};
-			const regist = await axios.post("/member/create", RegisData);
-			console.log(regist.data);
-			alert("Data Saved");
+			const stageResult = await axios.post("/event-stage/create", stageData);
+			console.log(stageResult.data);
 		} catch (error) {
-			console.error("Registeam" + error);
+			console.error("CREATE STAGE" + error);
 		}
 	};
 
 	const getEvents = () => {
 		axios.get("/event/get-event").then((response) => {
 			const filteredEvents = response.data.filter(
-				(item) => item.event.eventYear === year
+				(item) => item.event.eventYear === currentYear
 			);
 
 			events.value = filteredEvents.map((item) => item.event);
@@ -138,10 +132,27 @@
 	};
 
 	const getTeams = () => {
-		axios.get("/team/get-all").then((response) => {
-			teams.value = response.data;
-			console.log(teams.value);
-		});
+		axios
+			.get("/team/get-all")
+			.then((response) => {
+				// Assign data dari response ke filteredTeams.value
+				filteredTeams.value = response.data;
+
+				// Sekarang Anda bisa melakukan filtering
+				const currentYear = new Date().getFullYear();
+				filteredTeams.value = filteredTeams.value.filter((teamObj) => {
+					const teamCreatedAtYear = new Date(
+						teamObj.team.createdAt
+					).getFullYear();
+					return teamCreatedAtYear === currentYear;
+				});
+
+				console.log(filteredTeams.value);
+			})
+			.catch((error) => {
+				// Handle error jika terjadi
+				console.error("Error fetching teams:", error);
+			});
 	};
 </script>
 
@@ -158,7 +169,7 @@
 				v-show="role === `ADMIN`"
 				class="p-4 border-2 border-gray-200 border-opacity-100 rounded-lg dark:border-gray-700 mt-5"
 			>
-				<div>
+				<div class="flex gap-2">
 					<!-- Modal toggle -->
 					<button
 						data-modal-target="awards-modal"
@@ -169,7 +180,132 @@
 						Add Event
 					</button>
 
+					<button
+						data-modal-target="stages-modal"
+						data-modal-toggle="stages-modal"
+						class="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+						type="button"
+					>
+						Add Stages
+					</button>
+
 					<!-- Main modal -->
+					<div
+						data-modal-backdrop="static"
+						id="stages-modal"
+						tabindex="1"
+						aria-hidden="true"
+						class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full"
+					>
+						<div class="relative p-4 w-full max-w-md max-h-full">
+							<!-- Modal content -->
+							<div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+								<!-- Modal header -->
+								<div
+									class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600"
+								>
+									<h3
+										class="text-lg font-semibold text-gray-900 dark:text-white"
+									>
+										Create Registration Stages
+									</h3>
+									<button
+										type="button"
+										class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+										data-modal-toggle="stages-modal"
+									>
+										<svg
+											class="w-3 h-3"
+											aria-hidden="true"
+											xmlns="http://www.w3.org/2000/svg"
+											fill="none"
+											viewBox="0 0 14 14"
+										>
+											<path
+												stroke="currentColor"
+												stroke-linecap="round"
+												stroke-linejoin="round"
+												stroke-width="2"
+												d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+											/>
+										</svg>
+										<span class="sr-only">Close modal</span>
+									</button>
+								</div>
+								<!-- Modal body -->
+								<form @submit.prevent="createStage" class="p-4 md:p-5">
+									<div class="grid gap-4 mb-4 grid-cols-2">
+										<div class="col-span-2">
+											<label
+												for="name-event"
+												class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+											>
+												Name Stage
+											</label>
+											<input
+												v-model="stageName"
+												type="text"
+												name="name-event"
+												id="name-event"
+												class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+												placeholder="Name Stage"
+												required
+											/>
+										</div>
+										<div class="col-span-2">
+											<label
+												for="select-event"
+												class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+											>
+												Name Stage
+											</label>
+											<select
+												name="select-event"
+												id="select-event"
+												v-model="eventIdStage"
+												required
+												class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+											>
+												<option disabled value="">Select Event</option>
+												<option
+													v-for="event in events"
+													:key="event.eventId"
+													:value="event.eventId"
+												>
+													{{
+														event.length === 0 ? "No Event" : event.eventName
+													}}
+												</option>
+											</select>
+										</div>
+										<div class="col-span-2">
+											<label
+												for="description"
+												class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+											>
+												Description</label
+											>
+											<textarea
+												v-model="stageDesc"
+												type="text"
+												required
+												id="event-year"
+												class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+												placeholder="Desc"
+											/>
+										</div>
+									</div>
+
+									<button
+										type="submit"
+										class="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+									>
+										Save
+									</button>
+								</form>
+							</div>
+						</div>
+					</div>
 					<div
 						data-modal-backdrop="static"
 						id="awards-modal"
@@ -366,19 +502,20 @@
 			>
 				<div>
 					<!-- Modal toggle -->
+
 					<button
-						data-modal-target="add-team-member-modal"
-						data-modal-toggle="add-team-member-modal"
+						data-modal-target="registration-modal"
+						data-modal-toggle="registration-modal"
 						class="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
 						type="button"
 					>
 						Register Event
 					</button>
 
-					<!-- Main modal -->
+					<!-- Main modal Registration -->
 					<div
 						data-modal-backdrop="static"
-						id="add-team-member-modal"
+						id="registration-modal"
 						tabindex="1"
 						aria-hidden="true"
 						class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full"
@@ -393,12 +530,12 @@
 									<h3
 										class="text-lg font-semibold text-gray-900 dark:text-white"
 									>
-										Add Team & Member
+										Registration Event
 									</h3>
 									<button
 										type="button"
 										class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-										data-modal-toggle="add-team-member-modal"
+										data-modal-toggle="registration-modal"
 									>
 										<svg
 											class="w-3 h-3"
@@ -434,12 +571,15 @@
 												class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
 											>
 												<option disabled>Select Team</option>
+												<template v-if="filteredTeams.length === 0">
+													<option disabled>Belum Ada Team</option>
+												</template>
 												<option
-													v-for="team in teams"
-													:key="team.teamId"
-													:value="team.teamId"
+													v-for="team in filteredTeams"
+													:key="team.team.teamId"
+													:value="team.team.teamId"
 												>
-													{{ team.teamName }}
+													{{ team.team.teamName }}
 												</option>
 											</select>
 										</div>
