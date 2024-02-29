@@ -17,6 +17,9 @@
 	const stageName = ref("");
 	const stageDesc = ref("");
 	const eventIdStage = ref("");
+	const selectedEvent = ref();
+	const selectedTeam = ref();
+	const registrationList = ref([]);
 
 	const currentDate = new Date();
 	const currentYear = currentDate.getFullYear().toString();
@@ -42,12 +45,33 @@
 		}
 		getEvents();
 		getTeams();
+		getRegitrationList();
 	});
 
 	const resetForm = () => {
 		eventName.value = "";
 		eventYear.value = "";
 		steps.value = [];
+	};
+
+	const registration = async () => {
+		try {
+			const RegisterData = {
+				teamId: selectedTeam.value,
+				eventId: selectedEvent.value,
+				registrationStatus: "Pending",
+			};
+
+			const registResponse = await axios.post(
+				"/registration/register",
+				RegisterData
+			);
+
+			alert(registResponse.data);
+			(selectedEvent.value = ""), (selectedTeam.value = "");
+		} catch (ex) {
+			console.log("FAIL REGISTER " + ex);
+		}
 	};
 
 	const createEvent = async () => {
@@ -152,6 +176,18 @@
 			.catch((error) => {
 				// Handle error jika terjadi
 				console.error("Error fetching teams:", error);
+			});
+	};
+
+	const getRegitrationList = () => {
+		axios
+			.get("/registration/get-all")
+			.then((response) => {
+				registrationList.value = response.data;
+				console.log(registrationList.value);
+			})
+			.catch((ex) => {
+				console.error("FAIL GET REGISTRAATION : " + ex);
 			});
 	};
 </script>
@@ -501,7 +537,7 @@
 				class="p-4 border-2 border-gray-200 border-opacity-100 rounded-lg dark:border-gray-700 mt-5"
 			>
 				<div>
-					<!-- Modal toggle -->
+					<!-- Modal Registration -->
 
 					<button
 						data-modal-target="registration-modal"
@@ -556,7 +592,7 @@
 									</button>
 								</div>
 								<!-- Modal body -->
-								<form @submit.prevent="registerTeam" class="p-4 md:p-5">
+								<form @submit.prevent="registration" class="p-4 md:p-5">
 									<div class="grid gap-4 mb-4 grid-cols-2">
 										<div class="col-span-2">
 											<label
@@ -605,42 +641,6 @@
 												</option>
 											</select>
 										</div>
-										<div class="col-span-2">
-											<label
-												for="name-member"
-												class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-												>Member Name
-											</label>
-											<input
-												v-model="memberName"
-												type="text"
-												@input="memberName = $event.target.value.toUpperCase()"
-												name="name-member"
-												id="name-member"
-												class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-												placeholder="Member Name"
-												required
-											/>
-										</div>
-										<div class="col-span-2">
-											<label
-												for="position-member"
-												class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-												>Position
-											</label>
-											<input
-												v-model="memberPosition"
-												@input="
-													memberPosition = $event.target.value.toUpperCase()
-												"
-												type="text"
-												name="position-member"
-												id="position-member"
-												class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
-												placeholder="Position"
-												required
-											/>
-										</div>
 									</div>
 									<button
 										type="submit"
@@ -653,6 +653,45 @@
 						</div>
 					</div>
 				</div>
+			</div>
+
+			<div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-3">
+				<table
+					class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
+				>
+					<thead
+						class="text-xs text-gray-700 uppercase bg-gray-400 dark:bg-gray-700 dark:text-gray-400"
+					>
+						<tr>
+							<th scope="col" class="px-6 py-3">Team</th>
+							<th scope="col" class="px-6 py-3">Event</th>
+							<th scope="col" class="px-6 py-3">Stage</th>
+							<th scope="col" class="px-6 py-3">
+								<span class="sr-only">Edit</span>
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr
+							class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+						>
+							<th
+								scope="row"
+								class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+							>
+								Apple MacBook Pro 17"
+							</th>
+							<td class="px-6 py-4">Silver</td>
+							<td class="px-6 py-4 text-right">
+								<a
+									href="#"
+									class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+									>Edit</a
+								>
+							</td>
+						</tr>
+					</tbody>
+				</table>
 			</div>
 		</div>
 	</div>
