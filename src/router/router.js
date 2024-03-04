@@ -2,14 +2,15 @@
 
 import { createRouter, createWebHistory } from "vue-router";
 
-import login from "../Views/Auth/Login.vue";
-import register from "../Views/Auth/Register.vue";
-import dashboard from "../Views/Pages/Dashboard.vue";
+import login from "@/Views/Auth/Login.vue";
+import register from "@/Views/Auth/Register.vue";
+import dashboard from "@/Views/Pages/Dashboard.vue";
 import isAuthenticated from "./routeGuards";
-import profile from "../Views/Pages/Profile.vue";
-import teams from "../Views/Pages/Teams.vue";
-import members from "../Views/Pages/Members-Team.vue";
-import event from "../Views/Pages/Event.vue";
+import profile from "@/Views/Pages/Profile.vue";
+import teams from "@/Views/Pages/Teams.vue";
+import members from "@/Views/Pages/Members-Team.vue";
+import event from "@/Views/Pages/Event.vue";
+import eventDetail from "@/Views/Pages/Event-Details.vue";
 
 const routes = [
 	{
@@ -50,6 +51,12 @@ const routes = [
 		path: "/event",
 		name: "event",
 		component: event,
+		beforeEnter: isAuthenticated,
+	},
+	{
+		path: "/event/:registrationId",
+		name: "eventDetail",
+		component: eventDetail,
 		beforeEnter: isAuthenticated,
 	},
 ];

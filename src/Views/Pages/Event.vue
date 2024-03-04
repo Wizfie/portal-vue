@@ -20,6 +20,7 @@
 	const selectedEvent = ref();
 	const selectedTeam = ref();
 	const registrationList = ref([]);
+	const currentStageId = ref(null);
 
 	const currentDate = new Date();
 	const currentYear = currentDate.getFullYear().toString();
@@ -507,20 +508,6 @@
 									</div>
 									<hr class="mb-3" />
 
-									<!-- Daftar Langkah yang Sudah Ditambahkan -->
-									<!-- <div v-if="steps.length > 0" class="mt-4">
-										<h2 class="text-lg font-semibold">Steps Added:</h2>
-										<ul>
-											<li v-for="(step, index) in steps" :key="index">
-												Name Step: {{ step.name }} <br />
-												Start Date: {{ step.startDate }} <br />
-												End Date: {{ step.endDate }} <br />
-												Description: {{ step.description }}
-												<hr class="my-2" />
-											</li>
-										</ul>
-									</div> -->
-
 									<button
 										type="submit"
 										class="text-white inline-flex items-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
@@ -655,43 +642,57 @@
 				</div>
 			</div>
 
-			<div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-3">
-				<table
-					class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
-				>
-					<thead
-						class="text-xs text-gray-700 uppercase bg-gray-400 dark:bg-gray-700 dark:text-gray-400"
+			<router-view></router-view>
+			<div
+				class="p-4 border-2 border-gray-200 border-opacity-100 rounded-lg dark:border-gray-700 mt-5"
+			>
+				<div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-2">
+					<table
+						class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
 					>
-						<tr>
-							<th scope="col" class="px-6 py-3">Team</th>
-							<th scope="col" class="px-6 py-3">Event</th>
-							<th scope="col" class="px-6 py-3">Stage</th>
-							<th scope="col" class="px-6 py-3">
-								<span class="sr-only">Edit</span>
-							</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr
-							class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+						<caption>
+							<h1 class="text-2xl my-4">Event List</h1>
+						</caption>
+						<thead
+							class="text-xs text-gray-700 uppercase bg-gray-400 dark:bg-gray-700 dark:text-gray-400"
 						>
-							<th
-								scope="row"
-								class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
+							<tr>
+								<th scope="col" class="px-6 py-3">No</th>
+								<th scope="col" class="px-6 py-3">Team</th>
+								<th scope="col" class="px-6 py-3">Event</th>
+								<th scope="col" class="px-6 py-3">Status</th>
+								<th scope="col" class="px-6 py-3">Action</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr
+								v-for="(register, index) in registrationList"
+								:key="register.registrationId"
+								class="bg-white border-b-2 dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600"
 							>
-								Apple MacBook Pro 17"
-							</th>
-							<td class="px-6 py-4">Silver</td>
-							<td class="px-6 py-4 text-right">
-								<a
-									href="#"
-									class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
-									>Edit</a
+								<td class="px-6 py-4">{{ index + 1 }}</td>
+								<th
+									scope="row"
+									class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
 								>
-							</td>
-						</tr>
-					</tbody>
-				</table>
+									{{ register.team.teamName }}
+								</th>
+								<td class="px-6 py-4">{{ register.event.eventName }}</td>
+								<td class="px-6 py-4">{{ register.registrationStatus }}</td>
+								<td class="px-6 py-4">
+									<router-link
+										:to="{
+											name: 'eventDetail',
+											params: { registrationId: register.registrationId },
+										}"
+										class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+										>Details</router-link
+									>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
 			</div>
 		</div>
 	</div>
