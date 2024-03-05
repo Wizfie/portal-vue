@@ -10,7 +10,7 @@
 	const registrationId = ref(null);
 	const router = useRouter();
 	const route = useRoute();
-
+	const registeredData = ref([]);
 	// Methods
 	const goBack = () => {
 		router.back();
@@ -25,11 +25,14 @@
 		getRegisteredById();
 	});
 
-	const getRegisteredById = () => {
+	const getRegisteredById = async () => {
 		try {
-			const result = axios.get(`/registration/${registrationId.value}`);
-			console.log(result.value);
-		} catch (error) {}
+			const result = await axios.get(`/registration/${registrationId.value}`);
+			console.log(result.data);
+			registeredData.value = result.data;
+		} catch (error) {
+			console.error("Fail get RegisteredById" + error);
+		}
 	};
 </script>
 <template>
@@ -41,19 +44,84 @@
 			>
 				<h1 class="text-xl">Details</h1>
 			</div>
+
 			<div
-				class="p-4 border-2 border-gray-200 border-opacity-100 rounded-lg dark:border-gray-700 mt-14"
+				class="w-full max-w-md p-4 mt-4 bg-white border border-gray-200 rounded-lg shadow sm:p-8 dark:bg-gray-800 dark:border-gray-700"
 			>
-				<h1 class="text-2xl">Team</h1>
-				<small>Event</small>
+				<div class="flex items-center justify-between mb-4">
+					<h5
+						class="text-xl font-bold leading-none text-gray-900 dark:text-white"
+					>
+						{{
+							registeredData.team ? registeredData.team.teamName : "Team Name "
+						}}
+					</h5>
+					<a
+						href="#"
+						class="text-sm font-medium text-blue-600 dark:text-blue-500"
+					>
+						{{
+							registeredData.event
+								? registeredData.event.eventName
+								: "Event Name "
+						}}
+					</a>
+				</div>
+				<div class="flow-root">
+					<ul
+						v-if="
+							registeredData &&
+							registeredData.team &&
+							registeredData.team.teamMember
+						"
+						role="list"
+						class="divide-y divide-gray-200 dark:divide-gray-700"
+					>
+						<li
+							v-for="(team, index) in registeredData.team.teamMember"
+							:key="index"
+							class="py-3 sm:py-4"
+						>
+							<div class="flex items-center">
+								<div class="flex-shrink-0"></div>
+								<div class="flex-1 min-w-0 ms-4">
+									<p
+										class="text-sm font-medium text-gray-900 truncate dark:text-white"
+									>
+										{{ team.memberName }}
+									</p>
+									<!-- <p
+										class="text-sm text-gray-500 truncate dark:text-gray-400"
+									></p> -->
+								</div>
+								<div
+									class="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white"
+								>
+									{{ team.memberPosition }}
+								</div>
+							</div>
+						</li>
+					</ul>
+				</div>
 			</div>
+
 			<div
 				class="p-4 border-2 border-gray-200 border-opacity-100 rounded-lg dark:border-gray-700 mt-5"
 			>
 				<ol
 					class="relative border-s border-gray-200 dark:border-gray-700 ms-2 p-4"
+					v-if="
+						registeredData &&
+						registeredData.event &&
+						registeredData.event.stages
+						// && registeredData.event.stages.uploadFiles
+					"
 				>
-					<li class="mb-10 ms-6">
+					<li
+						v-for="(stage, index) in registeredData.event.stages"
+						:key="index"
+						class="mb-10 ms-6"
+					>
 						<span
 							class="absolute flex items-center justify-center w-6 h-6 bg-blue-100 rounded-full -start-3 ring-8 ring-white dark:ring-gray-900 dark:bg-blue-900"
 						>
@@ -72,22 +140,33 @@
 						<h3
 							class="flex items-center mb-1 text-lg font-semibold text-gray-900 dark:text-white"
 						>
-							Flowbite Application UI v2.0.0
+							{{ stage.stageName }}
 							<span
-								class="bg-blue-100 text-blue-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300 ms-3"
-								>Latest</span
+								v-for="(file, fileIndex) in stage.uploadFiles.filter(
+									(file) =>
+										file.registration.registrationId ===
+										registeredData.registrationId
+								)"
+								:key="fileIndex"
+								:class="{
+									'bg-green-100 text-green-800':
+										file.approvalStatus === 'APPROVE',
+									'bg-yellow-100 text-yellow-800':
+										file.approvalStatus !== 'APPROVE',
+								}"
+								class="text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300 ms-3"
 							>
+								{{ file.approvalStatus === "APPROVE" ? "Approved" : "Waiting" }}
+							</span>
 						</h3>
-						<time
+						<!-- <time
 							class="block mb-2 text-sm font-normal leading-none text-gray-400 dark:text-gray-500"
 							>Released on January 13th, 2022</time
-						>
+						> -->
 						<p
 							class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400"
 						>
-							Get access to over 20+ pages including a dashboard layout, charts,
-							kanban board, calendar, and pre-order E-commerce & Marketing
-							pages.
+							{{ stage.description }}
 						</p>
 
 						<label
@@ -96,7 +175,7 @@
 							>Upload file</label
 						>
 						<input
-							class="block w-1/2 text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+							class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
 							id="file_input"
 							type="file"
 						/>
