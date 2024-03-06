@@ -11,6 +11,7 @@
 	const router = useRouter();
 	const route = useRoute();
 	const registeredData = ref([]);
+
 	// Methods
 	const goBack = () => {
 		router.back();
@@ -113,8 +114,8 @@
 					v-if="
 						registeredData &&
 						registeredData.event &&
-						registeredData.event.stages
-						// && registeredData.event.stages.uploadFiles
+						registeredData.event.stages &&
+						registeredData.uploadFiles
 					"
 				>
 					<li
@@ -142,12 +143,12 @@
 						>
 							{{ stage.stageName }}
 							<span
-								v-for="(file, fileIndex) in stage.uploadFiles.filter(
+								v-for="file in registeredData.uploadFiles.filter(
 									(file) =>
-										file.registration.registrationId ===
-										registeredData.registrationId
+										file.registrationId === registeredData.registrationId &&
+										file.stageId === stage.stageId
 								)"
-								:key="fileIndex"
+								:key="file.filesId"
 								:class="{
 									'bg-green-100 text-green-800':
 										file.approvalStatus === 'APPROVE',
