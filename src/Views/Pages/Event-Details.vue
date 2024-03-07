@@ -5,16 +5,67 @@
 	import { useRoute, useRouter } from "vue-router";
 	import axios from "axios";
 
+	// var
 	const store = useStore();
 	const userData = ref("");
 	const registrationId = ref(null);
 	const router = useRouter();
 	const route = useRoute();
 	const registeredData = ref([]);
-
+	const uploading = ref({});
+	const fileInput = ref(null);
+	const fileInputKey = ref(0);
 	// Methods
-	const goBack = () => {
-		router.back();
+
+	const handleFileChange = (event, stage) => {
+		const files = event.target.files;
+		stage.selectedFiles = Array.from(files);
+	};
+
+	const uploadFiles = async (stage) => {
+		uploading.value[stage.stageId] = true;
+
+		const formDataArray = [];
+
+		stage.selectedFiles.forEach((file) => {
+			const formData = new FormData();
+			formData.append("file", file);
+			formData.append(
+				"eventName",
+				registeredData.value?.event?.eventName || ""
+			);
+			formData.append("teamName", registeredData.value?.team?.teamName || "");
+			formData.append("eventStages", stage?.stageId || "");
+			formData.append(
+				"registration",
+				registeredData.value?.registrationId || ""
+			);
+			formDataArray.push(formData);
+		});
+
+		Promise.all(
+			formDataArray.map((formData) => {
+				return axios.post("/file/upload", formData);
+			})
+		)
+			.then((responses) => {
+				console.log(responses);
+				uploading.value[stage.stageId] = false;
+				resetFileInput();
+				getRegisteredById();
+				alert("Upload berhasil");
+			})
+			.catch((ex) => {
+				console.error(ex);
+				uploading.value[stage.stageId] = false;
+				getRegisteredById();
+				resetFileInput();
+				alert("Gagal upload file: " + ex);
+			});
+	};
+
+	const resetFileInput = () => {
+		fileInputKey.value += 1;
 	};
 
 	onMounted(() => {
@@ -34,6 +85,17 @@
 		} catch (error) {
 			console.error("Fail get RegisteredById" + error);
 		}
+	};
+
+	const isUploaded = (stageId) => {
+		const filesUploaded = registeredData.value.uploadFiles.filter(
+			(file) =>
+				file.registrationId === registeredData.value.registrationId &&
+				file.stageId === stageId
+		);
+
+		// Kembalikan true jika tidak ada file yang diunggah untuk tahap ini
+		return filesUploaded.length > 0;
 	};
 </script>
 <template>
@@ -92,8 +154,8 @@
 										{{ team.memberName }}
 									</p>
 									<!-- <p
-										class="text-sm text-gray-500 truncate dark:text-gray-400"
-									></p> -->
+                                        class="text-sm text-gray-500 truncate dark:text-gray-400"
+                                    ></p> -->
 								</div>
 								<div
 									class="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white"
@@ -160,10 +222,6 @@
 								{{ file.approvalStatus === "APPROVE" ? "Approved" : "Waiting" }}
 							</span>
 						</h3>
-						<!-- <time
-							class="block mb-2 text-sm font-normal leading-none text-gray-400 dark:text-gray-500"
-							>Released on January 13th, 2022</time
-						> -->
 						<p
 							class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400"
 						>
@@ -175,11 +233,26 @@
 							for="file_input"
 							>Upload file</label
 						>
+
 						<input
-							class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-							id="file_input"
+							:id="'file_input_' + stage.stageId"
+							:key="fileInputKey"
+							class="block w-full mb-2 text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
 							type="file"
+							ref="fileInput"
+							multiple
+							:disabled="isUploaded(stage.stageId)"
+							@change="handleFileUpload($event, stage)"
 						/>
+						<!-- Animasi loading saat proses upload -->
+						<transition name="fade">
+							<div
+								v-if="uploading[stage.stageId]"
+								class="text-green-500 dark:text-green-500 mb-2"
+							>
+								Uploading...
+							</div>
+						</transition>
 					</li>
 				</ol>
 			</div>
@@ -187,4 +260,13 @@
 	</div>
 </template>
 
-<style></style>
+<style>
+	.fade-enter-active,
+	.fade-leave-active {
+		transition: opacity 0.5s;
+	}
+	.fade-enter,
+	.fade-leave-to {
+		opacity: 0;
+	}
+</style>

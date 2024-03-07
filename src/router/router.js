@@ -11,6 +11,7 @@ import teams from "@/Views/Pages/Teams.vue";
 import members from "@/Views/Pages/Members-Team.vue";
 import event from "@/Views/Pages/Event.vue";
 import eventDetail from "@/Views/Pages/Event-Details.vue";
+import eventAdmin from "@/Views/Pages/Event-Admin.vue";
 
 const routes = [
 	{
@@ -57,6 +58,12 @@ const routes = [
 		path: "/event/:registrationId",
 		name: "eventDetail",
 		component: eventDetail,
+		beforeEnter: isAuthenticated,
+	},
+	{
+		path: "/event/admin",
+		name: "eventAdmin",
+		component: eventAdmin,
 		beforeEnter: isAuthenticated,
 	},
 ];
