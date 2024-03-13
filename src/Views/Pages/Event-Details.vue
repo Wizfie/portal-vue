@@ -149,9 +149,7 @@ const isUploaded = (stageId) => {
                   >
                     {{ team.memberName }}
                   </p>
-                  <!-- <p
-                                        class="text-sm text-gray-500 truncate dark:text-gray-400"
-                                    ></p> -->
+                  <!-- <p class="text-sm text-gray-500 truncate dark:text-gray-400"></p> -->
                 </div>
                 <div
                   class="inline-flex items-center text-base font-semibold text-gray-900 dark:text-white"
