@@ -15,6 +15,17 @@ const uploading = ref({});
 const fileInput = ref(null);
 const fileInputKey = ref(0);
 const selectedFiles = ref({});
+const stageFileIndexes = {};
+
+// cyc
+onMounted(() => {
+  userData.value = store.getters.getUserData;
+  // console.log(userData.value);
+  //
+  registrationId.value = route.params.registrationId;
+  console.log(registrationId.value);
+  getRegisteredById();
+});
 
 // Methods
 const handleFileChange = (event, stage) => {
@@ -59,19 +70,12 @@ const uploadFiles = async (stage) => {
     });
 };
 
+// utils
+
 const resetFileInput = () => {
   fileInputKey.value += 1;
   selectedFiles.value = {};
 };
-
-onMounted(() => {
-  userData.value = store.getters.getUserData;
-  console.log(userData.value);
-  //
-  registrationId.value = route.params.registrationId;
-  console.log(registrationId.value);
-  getRegisteredById();
-});
 
 const getRegisteredById = async () => {
   try {
@@ -93,6 +97,15 @@ const isUploaded = (stageId) => {
   // Kembalikan true jika tidak ada file yang diunggah untuk tahap ini
   return filesUploaded.length > 0;
 };
+
+const getStageFileIndex = (stageId, localIndex) => {
+  if (!stageFileIndexes[stageId]) {
+    stageFileIndexes[stageId] = 1;
+  }
+  const currentIndex = stageFileIndexes[stageId];
+  stageFileIndexes[stageId] += 1;
+  return currentIndex;
+};
 </script>
 <template>
   <div>
@@ -104,6 +117,7 @@ const isUploaded = (stageId) => {
         <h1 class="text-xl">Details</h1>
       </div>
 
+      <!-- Card Team -->
       <div
         class="w-full max-w-md p-4 mt-4 bg-white border border-gray-200 rounded-lg shadow sm:p-8 dark:bg-gray-800 dark:border-gray-700"
       >
@@ -115,16 +129,13 @@ const isUploaded = (stageId) => {
               registeredData.team ? registeredData.team.teamName : "Team Name "
             }}
           </h5>
-          <a
-            href="#"
-            class="text-sm font-medium text-blue-600 dark:text-blue-500"
-          >
+          <span class="text-sm font-medium text-blue-600 dark:text-blue-500">
             {{
               registeredData.event
                 ? registeredData.event.eventName
                 : "Event Name "
             }}
-          </a>
+          </span>
         </div>
         <div class="flow-root">
           <ul
@@ -161,7 +172,24 @@ const isUploaded = (stageId) => {
           </ul>
         </div>
       </div>
+      <!-- Button Group -->
 
+      <div class="inline-flex rounded-md shadow-sm mt-3" role="group">
+        <button
+          type="button"
+          class="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border border-gray-900 rounded-s-lg hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700"
+        >
+          Upload
+        </button>
+        <button
+          type="button"
+          class="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border border-gray-900 rounded-e-lg hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700"
+        >
+          Downloads
+        </button>
+      </div>
+
+      <!-- Form Upload -->
       <div
         class="p-4 border-2 border-gray-200 border-opacity-100 rounded-lg dark:border-gray-700 mt-5"
       >
@@ -198,37 +226,46 @@ const isUploaded = (stageId) => {
               class="flex items-center mb-1 text-lg font-semibold text-gray-900 dark:text-white"
             >
               {{ stage.stageName }}
-              <span
-                v-if="
-                  registeredData.uploadFiles.some(
-                    (file) => file.stageId === stage.stageId
-                  ) &&
-                  registeredData.uploadFiles.every(
-                    (file) =>
-                      file.stageId === stage.stageId &&
-                      file.approvalStatus === 'APPROVE'
-                  )
-                "
-                class="bg-green-100 text-green-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300 ms-3"
-              >
-                Approved
-              </span>
-              <span
-                v-else-if="
-                  registeredData.uploadFiles.some(
-                    (file) => file.stageId === stage.stageId
-                  )
-                "
-                class="bg-yellow-100 text-yellow-800 text-sm font-medium me-2 px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300 ms-3"
-              >
-                Waiting
-              </span>
             </h3>
             <p
               class="mb-4 text-base font-normal text-gray-500 dark:text-gray-400"
             >
               {{ stage.description }}
             </p>
+
+            <!-- List Uploaded Files -->
+            <div v-if="registeredData.uploadFiles.length > 0">
+              <p
+                class="mt-2 mb-4 text-sm font-medium text-gray-900 dark:text-white"
+              >
+                Uploaded Files:
+              </p>
+              <ul class="mb-4">
+                <li
+                  v-for="(uploadedFile, index) in registeredData.uploadFiles"
+                  :key="index"
+                  class="mb-2"
+                >
+                  <span v-if="uploadedFile.stageId === stage.stageId">
+                    <span class="md:text-wrap">
+                      {{ getStageFileIndex(stage.stageId, index) }}.
+                      {{ uploadedFile.fileName }}
+                    </span>
+                    <!-- Menambahkan nomor urut stage -->
+                    <span
+                      v-if="uploadedFile.approvalStatus === 'APPROVE'"
+                      class="mb-4 text-green-500 ms-3"
+                      >Approved</span
+                    >
+                    <span
+                      v-else
+                      class="bg-yellow-300 text-black ms-3 border rounded-md p-1"
+                      >Waiting</span
+                    >
+                  </span>
+                </li>
+              </ul>
+            </div>
 
             <label
               class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"

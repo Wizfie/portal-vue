@@ -41,7 +41,7 @@
             class="relative overflow-x-auto shadow-md sm:rounded-lg dark:bg-gray-800"
           >
             <table
-              class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-white bg-slate-400 border-b-4 border border-gray-200 rounded-lg"
+              class="w-full text-sm text-left rtl:text-right text-black-500 dark:text-white bg-slate-400 border-b-4 border border-gray-200 rounded-lg table-bordered table-hover"
             >
               <thead
                 class="text-xs text-gray-700 uppercase text-center bg-gray-400 dark:bg-gray-700 dark:text-gray-400"
@@ -50,103 +50,85 @@
                   <th scope="col" class="px-6 py-3">No</th>
                   <th scope="col" class="px-6 py-3">Team</th>
                   <th scope="col" class="px-6 py-3">File Name</th>
-                  <th scope="col" class="px-6 py-3">Uploaded At</th>
                   <th scope="col" class="px-6 py-3">Status</th>
                   <th scope="col" class="px-6 py-3">Action</th>
                 </tr>
               </thead>
               <tbody>
-                <template v-if="registrations.length > 0">
-                  <template
-                    v-for="(registration, registrationIndex) in registrations"
+                <template
+                  v-for="(registration, index) in registrations"
+                  :key="registration.registrationId"
+                >
+                  <tr
+                    v-if="
+                      registration.uploadFiles &&
+                      registration.uploadFiles.length > 0
+                    "
+                    v-for="(file, fileIndex) in registration.uploadFiles"
+                    :key="file.filesId"
                   >
-                    <tr
-                      v-for="(file, index) in registration.uploadFiles"
-                      :key="file.filesId"
-                      class="bg-white border-2 dark:bg-gray-800 dark:border-gray-700"
-                    >
-                      <template v-if="index === 0">
-                        <th
-                          :rowspan="registration.uploadFiles.length"
-                          scope="row"
-                          class="px-6 py-4 font-medium border-2 text-center text-gray-900 whitespace-nowrap dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600"
-                        >
-                          {{ registrationIndex + 1 }}
-                        </th>
-                        <th
-                          :rowspan="registration.uploadFiles.length"
-                          scope="row"
-                          class="px-6 py-4 font-medium border-2 text-center text-gray-900 whitespace-nowrap dark:text-white hover:bg-gray-200 dark:hover:bg-gray-600"
-                        >
-                          <small>
-                            {{ registration.event.eventName }}
-                          </small>
-                          <br />
-                          <br />
-                          {{ registration.team.teamName }}
-                        </th>
-                      </template>
-                      <template
-                        v-if="registration.event && registration.event.stages"
-                      >
-                        <td
-                          class="px-6 py-4 hover:bg-gray-200 dark:hover:bg-gray-600"
-                        >
-                          <small>
-                            {{ getStageName(file.stageId) }}
-                          </small>
-                          <br />
-                          <button
-                            @click="downloadFile(file.fileName)"
-                            class="font-medium text-blue-600 dark:text-blue-500 hover:underline hover:bg-gray-200 dark:hover:bg-gray-600"
-                          >
-                            {{ file.fileName }}
-                          </button>
-                        </td>
-                      </template>
+                    <template v-if="fileIndex === 0">
                       <td
-                        class="px-6 py-4 border-2 text-center hover:bg-gray-200 dark:hover:bg-gray-600"
-                        v-html="formatUploadedDate(file.uploadedAt)"
-                      ></td>
-                      <td
-                        class="px-6 py-4 border-2 text-center hover:bg-gray-200 dark:hover:bg-gray-600"
+                        :rowspan="registration.uploadFiles.length"
+                        class="px-6 py-4 text-center"
                       >
-                        {{ file.approvalStatus }}
+                        {{ index + 1 }}
                       </td>
                       <td
-                        class="w-full px-6 py-6 flex gap-2 justify-center text-center hover:bg-gray-200 dark:hover:bg-gray-600"
+                        :rowspan="registration.uploadFiles.length"
+                        scope="row"
+                        class="px-6 py-4 font-medium text-center text-gray-900 whitespace-nowrap bg-gray-50 dark:text-white dark:bg-gray-800"
                       >
+                        <small>{{ registration.event.eventName }}</small>
+                        <br />
+                        <br />
+                        <span>{{ registration.team.teamName }}</span>
+                      </td>
+                    </template>
+                    <td class="px-6 py-4">
+                      <small class="font-medium">{{
+                        getStageName(file.stageId)
+                      }}</small>
+                      <br />
+                      <div class="md:flex md:flex-col md:justify-between">
                         <button
-                          @click="
-                            approveFile(
-                              registration.registrationId,
-                              file.filesId
-                            )
-                          "
-                          class="font-medium p-2 text-white rounded-md bg-blue-600 dark:text-blue-500"
+                          @click="downloadFile(file.fileName)"
+                          class="hover:bg-blue-100 mb-2 md:mb-2"
+                        >
+                          {{ file.fileName }}
+                        </button>
+                        <small class="text-sm text-end">
+                          <span>Upload Date : </span>
+                          <br />
+                          {{ formatUploadedDate(file.uploadedAt) }}
+                        </small>
+                      </div>
+                    </td>
+
+                    <td
+                      class="px-6 py-4 bg-gray-50 text-center dark:bg-gray-800"
+                    >
+                      {{ file.approvalStatus }}
+                    </td>
+                    <td class="px-6 py-4">
+                      <div class="flex gap-3 justify-center">
+                        <button
+                          class="p-4 font-medium text-white bg-blue-500 rounded-md"
                         >
                           Approve
                         </button>
                         <button
-                          @click="
-                            approveFile(
-                              registration.registrationId,
-                              file.filesId
-                            )
-                          "
-                          class="font-medium p-2 bg-red-500 rounded-md text-white dark:text-blue-500"
+                          class="p-4 font-medium text-white bg-red-500 rounded-md"
                         >
                           Reject
                         </button>
-                      </td>
-                    </tr>
-                  </template>
-                </template>
-                <div class="p-2">
-                  <tr>
-                    <td colspan="6"><span>No Data</span></td>
+                      </div>
+                    </td>
                   </tr>
-                </div>
+                </template>
+                <tr v-if="!registrations.length">
+                  <td colspan="6" class="px-6 py-4">Belum ada file</td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -171,7 +153,7 @@ const loading = ref(false);
 
 onMounted(() => {
   userData.value = store.getters.getUserData;
-  console.log(userData.value);
+  // console.log(userData.value);
   getRegitrationList();
 });
 
@@ -219,7 +201,7 @@ const formatUploadedDate = (uploadedAt) => {
     date.getMonth() + 1
   }-${date.getDate()}`;
   const formattedTime = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()}`;
-  return `${formattedDate} <br>${formattedTime}`;
+  return `${formattedDate}, \n${formattedTime}`;
 };
 const getStageName = (stageId) => {
   // Cari objek stage yang sesuai dengan stageId
@@ -235,8 +217,14 @@ const getStageName = (stageId) => {
 </script>
 
 <style>
-/* Style tambahan untuk mode gelap */
-.dark {
-  background-color: #1f2937;
+/* Gaya tambahan untuk menambahkan garis batas pada kolom nomor dan tim */
+.table-bordered th,
+.table-bordered td {
+  border: 1px solid #101111;
+}
+
+/* Efek hover pada setiap baris dan sub-baris */
+.table-hover tbody tr:hover {
+  background-color: rgba(48, 47, 47, 0.05);
 }
 </style>
