@@ -1,8 +1,8 @@
 <template>
   <div>
-    <!-- Spinner loading -->
+    <!-- Spinner isLoading -->
     <div
-      v-if="loading"
+      v-if="isLoading"
       class="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50"
     >
       <div role="status">
@@ -23,7 +23,7 @@
           />
         </svg>
         <br />
-        <span>Loading...</span>
+        <span>isLoading...</span>
       </div>
     </div>
     <SiddebarWithNavbar></SiddebarWithNavbar>
@@ -90,13 +90,32 @@
                         getStageName(file.stageId)
                       }}</small>
                       <br />
+                      <div></div>
+
                       <div class="md:flex md:flex-col md:justify-between">
-                        <button
-                          @click="downloadFile(file.fileName)"
-                          class="hover:bg-blue-100 mb-2 md:mb-2"
-                        >
-                          {{ file.fileName }}
-                        </button>
+                        <div class="flex">
+                          <svg
+                            class="w-4 h-4 mt-1.5 me-2 text-gray-800 dark:text-white"
+                            aria-hidden="true"
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            fill="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              fill-rule="evenodd"
+                              d="M9 2.221V7H4.221a2 2 0 0 1 .365-.5L8.5 2.586A2 2 0 0 1 9 2.22ZM11 2v5a2 2 0 0 1-2 2H4v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2h-7ZM8 16a1 1 0 0 1 1-1h6a1 1 0 1 1 0 2H9a1 1 0 0 1-1-1Zm1-5a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2H9Z"
+                              clip-rule="evenodd"
+                            />
+                          </svg>
+                          <button
+                            @click="downloadFile(file.fileName)"
+                            class="hover:bg-blue-100 mb-2 md:mb-2 rounded border-2 border-dashed p-2"
+                          >
+                            {{ file.fileName }}
+                          </button>
+                        </div>
                         <small class="text-sm text-end">
                           <span>Upload Date : </span>
                           <br />
@@ -149,7 +168,7 @@ const store = useStore();
 const token = "Bearer " + localStorage.getItem("authToken");
 const userData = ref("");
 const registrations = ref([]);
-const loading = ref(false);
+const isLoading = ref(false);
 
 onMounted(() => {
   userData.value = store.getters.getUserData;
@@ -172,14 +191,14 @@ const getRegitrationList = () => {
 };
 
 const downloadFile = (fileName) => {
-  loading.value = true;
+  isLoading.value = true;
   axios({
     url: `/file/${fileName}`,
     method: "GET",
     responseType: "blob",
   })
     .then((response) => {
-      loading.value = false;
+      isLoading.value = false;
 
       const url = window.URL.createObjectURL(new Blob([response.data]));
       const link = document.createElement("a");
@@ -189,8 +208,8 @@ const downloadFile = (fileName) => {
       link.click();
     })
     .catch((error) => {
-      loading.value = false;
-      console.error("Error downloading file:", error);
+      isLoading.value = false;
+      console.error("Error downisLoading file:", error);
     });
 };
 
