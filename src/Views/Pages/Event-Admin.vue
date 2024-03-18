@@ -26,7 +26,7 @@
         <span>isLoading...</span>
       </div>
     </div>
-    <SiddebarWithNavbar></SiddebarWithNavbar>
+    <SidebarWithNav></SidebarWithNav>
     <div class="w-full h-full p-4 sm:ml-64 dark:bg-gray-700 dark:text-white">
       <div
         class="p-4 border-2 border-gray-200 border-opacity-100 rounded-lg dark:border-gray-700 mt-14"
@@ -41,7 +41,7 @@
             class="relative overflow-x-auto shadow-md sm:rounded-lg dark:bg-gray-800"
           >
             <table
-              class="w-full text-sm text-left rtl:text-right text-black-500 dark:text-white bg-slate-400 border-b-4 border border-gray-200 rounded-lg table-bordered table-hover"
+              class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
             >
               <thead
                 class="text-xs text-gray-700 uppercase text-center bg-gray-400 dark:bg-gray-700 dark:text-gray-400"
@@ -60,6 +60,7 @@
                   :key="registration.registrationId"
                 >
                   <tr
+                    class="bg-white border-2 dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
                     v-if="
                       registration.uploadFiles &&
                       registration.uploadFiles.length > 0
@@ -70,14 +71,14 @@
                     <template v-if="fileIndex === 0">
                       <td
                         :rowspan="registration.uploadFiles.length"
-                        class="px-6 py-4 text-center"
+                        class="px-6 py-4 bg-white border-2 hover:bg-gray-50 text-center"
                       >
                         {{ index + 1 }}
                       </td>
                       <td
                         :rowspan="registration.uploadFiles.length"
                         scope="row"
-                        class="px-6 py-4 font-medium text-center text-gray-900 whitespace-nowrap bg-gray-50 dark:text-white dark:bg-gray-800"
+                        class="px-6 py-4 bg-white border-2 hover:bg-gray-50 font-medium text-center text-gray-900 whitespace-nowrap dark:text-white dark:bg-gray-800"
                       >
                         <small>{{ registration.event.eventName }}</small>
                         <br />
@@ -85,7 +86,7 @@
                         <span>{{ registration.team.teamName }}</span>
                       </td>
                     </template>
-                    <td class="px-6 py-4">
+                    <td class="px-6 py-4 bg-white border-2 hover:bg-gray-50">
                       <small class="font-medium">{{
                         getStageName(file.stageId)
                       }}</small>
@@ -125,19 +126,37 @@
                     </td>
 
                     <td
-                      class="px-6 py-4 bg-gray-50 text-center dark:bg-gray-800"
+                      class="px-6 py-4 text-center bg-white border-2 hover:bg-gray-50"
                     >
-                      {{ file.approvalStatus }}
+                      <span
+                        v-if="file.approvalStatus === 'APPROVE'"
+                        class="mb-4 bg-green-500 text-white font-medium rounded-md p-2 ms-3"
+                        >Approved</span
+                      >
+                      <span
+                        v-else-if="file.approvalStatus === `REJECT`"
+                        class="bg-red-600 text-white font-medium ms-3 p-2 border rounded-md"
+                        >Rejected</span
+                      >
+                      <span
+                        v-else
+                        class="bg-yellow-400 text-white font-medium ms-3 border rounded-md p-2"
+                        >Waiting</span
+                      >
                     </td>
-                    <td class="px-6 py-4">
+                    <td class="px-6 py-4 bg-white border-2 hover:bg-gray-50">
                       <div class="flex gap-3 justify-center">
                         <button
+                          @click="approveFile(file.filesId)"
                           class="p-4 font-medium text-white bg-blue-500 rounded-md"
                         >
                           Approve
                         </button>
                         <button
-                          class="p-4 font-medium text-white bg-red-500 rounded-md"
+                          data-modal-target="reject-modal"
+                          data-modal-toggle="reject-modal"
+                          class="block text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
+                          type="button"
                         >
                           Reject
                         </button>
@@ -146,7 +165,12 @@
                   </tr>
                 </template>
                 <tr v-if="!registrations.length">
-                  <td colspan="6" class="px-6 py-4">Belum ada file</td>
+                  <td
+                    colspan="6"
+                    class="px-6 py-4 bg-white border-2 hover:bg-gray-50"
+                  >
+                    Belum ada file
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -155,11 +179,94 @@
       </div>
     </div>
   </div>
+
+  <!-- modal Reject -->
+  <div
+    id="reject-modal"
+    data-modal-backdrop="static"
+    tabindex="-1"
+    aria-hidden="true"
+    class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full"
+  >
+    <div class="relative p-4 w-full max-w-md max-h-full">
+      <!-- Modal content -->
+      <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+        <!-- Modal header -->
+        <div
+          class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600"
+        >
+          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
+            Reject Modal
+          </h3>
+          <button
+            type="button"
+            class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+            data-modal-hide="reject-modal"
+          >
+            <svg
+              class="w-3 h-3"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 14 14"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+              />
+            </svg>
+            <span class="sr-only">Close modal</span>
+          </button>
+        </div>
+        <!-- Modal body -->
+        <div class="p-4 md:p-5">
+          <form class="space-y-4" action="#">
+            <div>
+              <label
+                for="reason"
+                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                >Reason</label
+              >
+              <textarea
+                type="text"
+                name="reason"
+                id="reason"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                placeholder="Write here ..."
+                required
+              />
+            </div>
+            <div>
+              <label
+                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                for="file_input"
+                >Upload file</label
+              >
+              <input
+                class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                id="file_input"
+                type="file"
+              />
+            </div>
+            <button
+              type="submit"
+              class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+            >
+              Submit
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import { onMounted, ref } from "vue";
-import SiddebarWithNavbar from "../../components/SidebarWithNavbar.vue";
+import SidebarWithNav from "../../components/SidebarWithNavbar.vue";
 import { useStore } from "vuex";
 import axios from "axios";
 
@@ -173,12 +280,12 @@ const isLoading = ref(false);
 onMounted(() => {
   userData.value = store.getters.getUserData;
   // console.log(userData.value);
-  getRegitrationList();
+  registrationList();
 });
 
 // Main Method
 
-const getRegitrationList = () => {
+const registrationList = () => {
   axios
     .get("/registration/get-all")
     .then((response) => {
@@ -209,8 +316,26 @@ const downloadFile = (fileName) => {
     })
     .catch((error) => {
       isLoading.value = false;
-      console.error("Error downisLoading file:", error);
+      console.error("Error downloading file:", error);
     });
+};
+
+const approveFile = (fileId) => {
+  const approvalStatus = "APPROVE";
+  if (confirm("Approve File ini ?")) {
+    axios
+      .put(`/file/approve/${fileId}?approvalStatus=${approvalStatus}`)
+      .then((response) => {
+        console.log(response.data);
+        registrationList();
+
+        alert("Approved");
+      })
+      .catch((error) => {
+        console.error("Error approving file:", error);
+        alert("Fail Approve");
+      });
+  }
 };
 
 // Utils
@@ -235,15 +360,4 @@ const getStageName = (stageId) => {
 };
 </script>
 
-<style>
-/* Gaya tambahan untuk menambahkan garis batas pada kolom nomor dan tim */
-.table-bordered th,
-.table-bordered td {
-  border: 1px solid #101111;
-}
-
-/* Efek hover pada setiap baris dan sub-baris */
-.table-hover tbody tr:hover {
-  background-color: rgba(48, 47, 47, 0.05);
-}
-</style>
+<style></style>
