@@ -87,6 +87,38 @@ const downloadFile = (fileName) => {
     });
 };
 
+const uploadRevision = async (uploadedFile, stage) => {
+  // Get file input for revision
+  const fileInput = document.getElementById(`file_input_rev${stage.stageId}`);
+  const files = fileInput.files;
+
+  console.log("Upload revisi dipanggil dengan file:", uploadedFile);
+  console.log("Upload revisi dipanggil untuk stage:", stage);
+
+  if (files.length > 0) {
+    const formData = new FormData();
+    formData.append("file", files[0]);
+    formData.append("eventName", registeredData.value?.event?.eventName || "");
+    formData.append("teamName", registeredData.value?.team?.teamName || "");
+    formData.append("eventStages", stage?.stageId || "");
+    formData.append("registration", registeredData.value?.registrationId || "");
+
+    try {
+      const response = await axios.put(
+        `/file/update/${uploadedFile}`,
+        formData
+      );
+      alert("Upload revisi berhasil");
+      getRegisteredById();
+    } catch (error) {
+      console.error("Failed to upload revision:", error);
+      alert("Gagal upload revisi: " + error);
+    }
+  } else {
+    alert("Pilih file revisi terlebih dahulu");
+  }
+};
+
 const resetFileInput = () => {
   fileInputKey.value += 1;
   selectedFiles.value = {};
@@ -317,6 +349,7 @@ const handleFileChange = (event, stage) => {
                         }}.
                         {{ uploadedFile.fileName }}
                       </button>
+
                       <svg
                         class="w-5 h-5 ms-2 me-2 text-gray-800 dark:text-white"
                         aria-hidden="true"
@@ -336,8 +369,13 @@ const handleFileChange = (event, stage) => {
 
                       <span
                         v-if="uploadedFile.approvalStatus === 'APPROVE'"
-                        class="mb-4 text-green-500 ms-3"
+                        class="mb-4 bg-green-500 text-black rounded-md p-1 ms-3"
                         >Approved</span
+                      >
+                      <span
+                        v-else-if="uploadedFile.approvalStatus === `REJECT`"
+                        class="bg-red-500 text-black ms-3 border rounded-md p-1"
+                        >Rejected</span
                       >
                       <span
                         v-else
@@ -345,10 +383,37 @@ const handleFileChange = (event, stage) => {
                         >Waiting</span
                       >
                     </div>
+                    <div
+                      v-if="uploadedFile.approvalStatus === `REJECT`"
+                      class="mb-4"
+                    >
+                      <label
+                        class="block mb-2 mt-2 text-sm font-medium text-gray-900 dark:text-white"
+                        for="file_input"
+                        >Upload Revisi</label
+                      >
+
+                      <!-- Input untuk mengunggah file baru jika statusnya REJECT -->
+                      <input
+                        :id="'file_input_rev' + stage.stageId"
+                        :key="fileInputKey"
+                        class="block w-full mb-2 text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                        type="file"
+                        ref="fileInput"
+                      />
+                      <button
+                        @click="uploadRevision(uploadedFile.filesId, stage)"
+                        class="px-4 py-2 mt-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md cursor-pointer hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                      >
+                        Upload Revision
+                      </button>
+                    </div>
+                    <hr />
                   </span>
                 </li>
               </ul>
             </div>
+            <!-- Upload Files  -->
             <div v-if="!isUploaded(stage.stageId)">
               <label
                 class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
@@ -381,15 +446,16 @@ const handleFileChange = (event, stage) => {
               </p>
               <ul class="mb-4">
                 <li
+                  class="mb-3"
                   v-for="(file, index) in selectedFiles[stage.stageId]"
                   :key="index"
                 >
                   {{ file.name }}
                   <button
                     @click="removeSelectedFile(stage.stageId, index)"
-                    class="text-red-500 ml-2"
+                    class="text-black bg-red-500 rounded px-3 p-1 ml-2"
                   >
-                    Remove
+                    X
                   </button>
                 </li>
               </ul>
