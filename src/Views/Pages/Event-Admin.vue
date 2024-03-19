@@ -27,6 +27,7 @@
       </div>
     </div>
     <SidebarWithNav></SidebarWithNav>
+
     <div class="w-full h-full p-4 sm:ml-64 dark:bg-gray-700 dark:text-white">
       <div
         class="p-4 border-2 border-gray-200 border-opacity-100 rounded-lg dark:border-gray-700 mt-14"
@@ -153,8 +154,7 @@
                           Approve
                         </button>
                         <button
-                          data-modal-target="reject-modal"
-                          data-modal-toggle="reject-modal"
+                          @click="showRejectModal(file.filesId)"
                           class="block text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
                           type="button"
                         >
@@ -163,6 +163,98 @@
                       </div>
                     </td>
                   </tr>
+                  <div
+                    id="reject-modal"
+                    data-modal-backdrop="static"
+                    tabindex="-1"
+                    aria-hidden="true"
+                    class="hidden fixed top-0 left-0 z-50 w-full h-full flex items-center justify-center"
+                  >
+                    <div class="relative p-4 w-full max-w-md max-h-full">
+                      <!-- Modal content -->
+                      <div
+                        class="relative bg-white rounded-lg shadow dark:bg-gray-700"
+                      >
+                        <!-- Modal header -->
+                        <div
+                          class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600"
+                        >
+                          <h3
+                            class="text-xl font-semibold text-gray-900 dark:text-white"
+                          >
+                            Reject Modal
+                          </h3>
+                          <button
+                            @click="hideRejectModal()"
+                            type="button"
+                            class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
+                            data-modal-hide="reject-modal"
+                          >
+                            <svg
+                              class="w-3 h-3"
+                              aria-hidden="true"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 14 14"
+                            >
+                              <path
+                                stroke="currentColor"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+                              />
+                            </svg>
+                            <span class="sr-only">Close modal</span>
+                          </button>
+                        </div>
+                        <!-- Modal body -->
+                        <div class="p-4 md:p-5">
+                          <form
+                            @submit.prevent="rejectFile()"
+                            class="space-y-4"
+                            action="#"
+                          >
+                            <div>
+                              <label
+                                for="reason"
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                >Reason</label
+                              >
+                              <textarea
+                                v-model="rejectReason"
+                                type="text"
+                                name="reason"
+                                id="reason"
+                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
+                                placeholder="Write here ..."
+                                required
+                              ></textarea>
+                            </div>
+                            <div>
+                              <label
+                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                                for="file_input"
+                                >Upload file</label
+                              >
+                              <input
+                                @change="onReject($event)"
+                                class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
+                                id="file_input"
+                                type="file"
+                              />
+                            </div>
+                            <button
+                              type="submit"
+                              class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+                            >
+                              Submit
+                            </button>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </template>
                 <tr v-if="!registrations.length">
                   <td
@@ -179,89 +271,6 @@
       </div>
     </div>
   </div>
-
-  <!-- modal Reject -->
-  <div
-    id="reject-modal"
-    data-modal-backdrop="static"
-    tabindex="-1"
-    aria-hidden="true"
-    class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full"
-  >
-    <div class="relative p-4 w-full max-w-md max-h-full">
-      <!-- Modal content -->
-      <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
-        <!-- Modal header -->
-        <div
-          class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600"
-        >
-          <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-            Reject Modal
-          </h3>
-          <button
-            type="button"
-            class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
-            data-modal-hide="reject-modal"
-          >
-            <svg
-              class="w-3 h-3"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 14 14"
-            >
-              <path
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
-              />
-            </svg>
-            <span class="sr-only">Close modal</span>
-          </button>
-        </div>
-        <!-- Modal body -->
-        <div class="p-4 md:p-5">
-          <form class="space-y-4" action="#">
-            <div>
-              <label
-                for="reason"
-                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                >Reason</label
-              >
-              <textarea
-                type="text"
-                name="reason"
-                id="reason"
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
-                placeholder="Write here ..."
-                required
-              />
-            </div>
-            <div>
-              <label
-                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                for="file_input"
-                >Upload file</label
-              >
-              <input
-                class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400"
-                id="file_input"
-                type="file"
-              />
-            </div>
-            <button
-              type="submit"
-              class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-            >
-              Submit
-            </button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
 </template>
 
 <script setup>
@@ -269,18 +278,21 @@ import { onMounted, ref } from "vue";
 import SidebarWithNav from "../../components/SidebarWithNavbar.vue";
 import { useStore } from "vuex";
 import axios from "axios";
+import { initFlowbite } from "flowbite";
 
 // Variable
 const store = useStore();
-const token = "Bearer " + localStorage.getItem("authToken");
 const userData = ref("");
 const registrations = ref([]);
 const isLoading = ref(false);
+const rejectFileId = ref(null);
+const rejectReason = ref("");
+const file = ref(null);
 
 onMounted(() => {
-  userData.value = store.getters.getUserData;
-  // console.log(userData.value);
+  initFlowbite();
   registrationList();
+  userData.value = store.getters.getUserData;
 });
 
 // Main Method
@@ -338,7 +350,53 @@ const approveFile = (fileId) => {
   }
 };
 
+const rejectFile = async () => {
+  try {
+    const formData = new FormData();
+    formData.append("description", rejectReason.value);
+    formData.append("file", file.value);
+
+    // Ambil fileId dari ref
+    const fileId = rejectFileId.value;
+
+    await axios.put(`/file/reject/${fileId}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    alert("Reject File Success");
+  } catch (error) {
+    alert("Failed to reject file: " + error.response.data);
+  } finally {
+    registrationList();
+    rejectFileId.value = null;
+    file.value = null;
+    rejectReason.value = "";
+    hideRejectModal();
+  }
+};
+
 // Utils
+
+const showRejectModal = (filesId) => {
+  const modal = document.getElementById("reject-modal");
+  modal.classList.remove("hidden");
+
+  rejectFileId.value = filesId;
+  console.log(rejectFileId.value);
+};
+
+// Method untuk menyembunyikan modal reject
+const hideRejectModal = () => {
+  const modal = document.getElementById("reject-modal");
+  modal.classList.add("hidden");
+};
+
+const onReject = (event) => {
+  file.value = event.target.files[0];
+};
+
 const formatUploadedDate = (uploadedAt) => {
   const date = new Date(uploadedAt);
   const formattedDate = `${date.getFullYear()}-${
@@ -360,4 +418,22 @@ const getStageName = (stageId) => {
 };
 </script>
 
-<style></style>
+<style>
+#reject-modal {
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.5
+  ); /* Menambahkan lapisan belakang semi-transparan */
+}
+
+#reject-modal .modal-content {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  width: 80%; /* Atur lebar modal sesuai kebutuhan */
+  max-width: 500px; /* Atur lebar maksimum modal */
+  max-height: 80%; /* Atur tinggi maksimum modal */
+}
+</style>

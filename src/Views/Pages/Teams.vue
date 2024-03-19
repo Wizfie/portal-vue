@@ -420,7 +420,6 @@ const registerTeam = async () => {
                   >
                     View
                   </router-link>
-                  <!-- Modal view -->
                 </td>
               </tr>
             </tbody>

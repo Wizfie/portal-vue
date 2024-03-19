@@ -17,7 +17,7 @@ const authData = userDataString ? JSON.parse(userDataString) : null;
 
 // Inisialisasi state di Vuex store jika data tersedia
 if (authToken && authData) {
-	store.dispatch("saveUserDataAndToken", { token: authToken, user: authData });
+  store.dispatch("saveUserDataAndToken", { token: authToken, user: authData });
 }
 
 const app = createApp(App);
