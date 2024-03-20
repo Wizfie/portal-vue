@@ -4,9 +4,10 @@ import { initFlowbite } from "flowbite";
 import { onMounted, ref } from "vue";
 import SidebarWithNavbar from "../../components/SidebarWithNavbar.vue";
 
+//  identity
 const token = "Bearer " + localStorage.getItem("authToken");
 const role = ref("");
-const username = ref("");
+const userId = ref("");
 
 // Variable
 const eventName = ref("");
@@ -20,26 +21,17 @@ const eventIdStage = ref("");
 const selectedEvent = ref();
 const selectedTeam = ref();
 const registrationList = ref([]);
-const currentStageId = ref(null);
-
 const currentDate = new Date();
 const currentYear = currentDate.getFullYear().toString();
 
-const addStep = () => {
-  steps.value.push({ name: "", startDate: "", endDate: "", description: "" });
-};
-
-const removeStep = () => {
-  steps.value.pop();
-};
-
+// Methods
 onMounted(() => {
   initFlowbite();
   const userData = localStorage.getItem("userData");
   if (userData) {
     const parseJson = JSON.parse(userData);
     role.value = parseJson.role;
-    username.value = parseJson.username;
+    userId.value = parseJson.id.toString();
   }
   getEvents();
   getTeams();
@@ -58,6 +50,7 @@ const registration = async () => {
       teamId: selectedTeam.value,
       eventId: selectedEvent.value,
       registrationStatus: "Pending",
+      createdBy: userId.value,
     };
 
     const response = await axios.post("/registration/register", RegisterData);
@@ -72,6 +65,12 @@ const registration = async () => {
 const createEvent = async () => {
   try {
     // Buat event
+
+    if (steps.value.length === 0) {
+      // Jika tidak ada langkah yang ditambahkan, tampilkan pesan kesalahan
+      alert("Steps event wajib di tambahkan");
+      return;
+    }
     const eventData = {
       eventName: eventName.value,
       eventYear: eventYear.value,
@@ -127,6 +126,9 @@ const createStage = async () => {
     };
     const stageResult = await axios.post("/event-stage/create", stageData);
     console.log(stageResult.data);
+    alert(`Stages ${stageName.value}  Created`);
+    stageName.value = "";
+    stageDesc.value = "";
   } catch (error) {
     console.error("CREATE STAGE" + error);
   }
@@ -149,14 +151,12 @@ const getTeams = () => {
     .then((response) => {
       // Assign data dari response ke filteredTeams.value
       filteredTeams.value = response.data;
+      console.log(filteredTeams.value);
 
       // Sekarang Anda bisa melakukan filtering
       const currentYear = new Date().getFullYear();
-      filteredTeams.value = filteredTeams.value.filter((teamObj) => {
-        const teamCreatedAtYear = new Date(
-          teamObj.team.createdAt
-        ).getFullYear();
-        return teamCreatedAtYear === currentYear;
+      filteredTeams.value = filteredTeams.value.filter((event) => {
+        return event.team.userId === userId.value;
       });
 
       console.log(filteredTeams.value);
@@ -171,12 +171,25 @@ const getRegistration = () => {
   axios
     .get("/registration/get-all")
     .then((response) => {
-      registrationList.value = response.data;
+      registrationList.value = response.data.filter((item) => {
+        return (
+          item.createdBy === userId.value && item.createdAt === currentYear
+        );
+      });
       console.log(registrationList.value);
     })
     .catch((ex) => {
       console.error("FAIL GET REGISTRAATION : " + ex);
     });
+};
+
+// utils
+const addStep = () => {
+  steps.value.push({ name: "", startDate: "", endDate: "", description: "" });
+};
+
+const removeStep = () => {
+  steps.value.pop();
 };
 </script>
 
@@ -213,7 +226,7 @@ const getRegistration = () => {
             Add Stages
           </button>
 
-          <!-- Main modal -->
+          <!-- Main modal Stages -->
           <div
             data-modal-backdrop="static"
             id="stages-modal"
@@ -267,6 +280,7 @@ const getRegistration = () => {
                         Name Stage
                       </label>
                       <input
+                        @input="stageName = $event.target.value.toUpperCase()"
                         v-model="stageName"
                         type="text"
                         name="name-event"
@@ -330,6 +344,8 @@ const getRegistration = () => {
               </div>
             </div>
           </div>
+
+          <!-- Modal Event -->
           <div
             data-modal-backdrop="static"
             id="awards-modal"
@@ -384,6 +400,7 @@ const getRegistration = () => {
                         Name Event
                       </label>
                       <input
+                        @input="eventName = $event.target.value.toUpperCase()"
                         v-model="eventName"
                         type="text"
                         name="name-event"
@@ -402,7 +419,7 @@ const getRegistration = () => {
                       >
                       <input
                         v-model="eventYear"
-                        type="text"
+                        type="number"
                         required
                         id="event-year"
                         class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
@@ -410,130 +427,76 @@ const getRegistration = () => {
                       />
                     </div>
                     <div class="col-span-2">
-                      <strong class="underline">Steps</strong>
-                    </div>
-                    <!-- Form untuk step pertama -->
-                    <div v-if="steps.length === 0">
-                      <div class="col-span-2">
-                        <label
-                          for="step"
-                          class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                          >Step Name</label
-                        >
-                        <input
-                          v-model="steps[0].name"
-                          required
-                          type="text"
-                          id="step"
-                          class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                          placeholder="Name Steps"
-                        />
-                        <div class="flex gap-2">
-                          <div class="w-full">
-                            <label
-                              for="start-date"
-                              class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                              >Start Date</label
-                            >
-                            <input
-                              v-model="steps[0].startDate"
-                              required
-                              type="date"
-                              id="start-date"
-                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            />
-                          </div>
-                          <div class="w-full">
-                            <label
-                              for="end-date"
-                              class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                              >End Date</label
-                            >
-                            <input
-                              v-model="steps[0].endDate"
-                              required
-                              type="date"
-                              id="end-date"
-                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            />
-                          </div>
-                        </div>
-                        <label
-                          for="description"
-                          class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                          >Description</label
-                        >
-                        <textarea
-                          v-model="steps[0].description"
-                          required
-                          id="description"
-                          class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                          placeholder="Description"
-                        ></textarea>
-                        <hr class="mb-3" />
-                      </div>
+                      <strong class="underline">Steps Event</strong>
                     </div>
 
                     <!-- Form untuk step tambahan -->
-                    <div v-for="(step, index) in steps.slice(1)" :key="index">
-                      <div class="col-span-2">
-                        <label
-                          for="step"
-                          class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                          >Step Name</label
-                        >
-                        <input
-                          v-model="step.name"
-                          required
-                          type="text"
-                          id="step"
-                          class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                          placeholder="Name Steps"
-                        />
-                        <div class="flex gap-2">
-                          <div class="w-full">
-                            <label
-                              for="start-date"
-                              class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                              >Start Date</label
-                            >
-                            <input
-                              v-model="step.startDate"
-                              required
-                              type="date"
-                              id="start-date"
-                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            />
-                          </div>
-                          <div class="w-full">
-                            <label
-                              for="end-date"
-                              class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                              >End Date</label
-                            >
-                            <input
-                              v-model="step.endDate"
-                              required
-                              type="date"
-                              id="end-date"
-                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                            />
-                          </div>
+                    <div
+                      class="col-span-2"
+                      v-for="(step, index) in steps"
+                      :key="index"
+                    >
+                      <label
+                        for="step"
+                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                      >
+                        Step Name</label
+                      >
+                      <input
+                        @input="step.name = $event.target.value.toUpperCase()"
+                        v-model="step.name"
+                        required
+                        type="text"
+                        id="step"
+                        class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Name Steps"
+                      />
+                      <div class="flex gap-2">
+                        <div class="w-full">
+                          <label
+                            for="start-date"
+                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                          >
+                            Start Date
+                          </label>
+                          <input
+                            v-model="step.startDate"
+                            required
+                            type="date"
+                            id="start-date"
+                            class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                          />
                         </div>
-                        <label
-                          for="description"
-                          class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                          >Description</label
-                        >
-                        <textarea
-                          v-model="step.description"
-                          required
-                          id="description"
-                          class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                          placeholder="Description"
-                        ></textarea>
-                        <hr class="mb-3" />
+                        <div class="w-full">
+                          <label
+                            for="end-date"
+                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                          >
+                            End Date
+                          </label>
+                          <input
+                            v-model="step.endDate"
+                            required
+                            type="date"
+                            id="end-date"
+                            class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                          />
+                        </div>
                       </div>
+                      <label
+                        for="description"
+                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                      >
+                        Description</label
+                      >
+                      <textarea
+                        v-model="step.description"
+                        required
+                        id="description"
+                        class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                        placeholder="Description"
+                      ></textarea>
+                      <hr class="mb-3" />
                     </div>
                   </div>
 
@@ -566,8 +529,8 @@ const getRegistration = () => {
           </div>
         </div>
       </div>
+      <!-- v-show="role === `USER`" -->
       <div
-        v-show="role === `USER`"
         class="p-4 border-2 border-gray-200 border-opacity-100 rounded-lg dark:border-gray-700 mt-5"
       >
         <div>

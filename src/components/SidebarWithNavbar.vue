@@ -69,7 +69,7 @@ const Logout = async () => {
           </button>
           <a href="https://www.gt-tires.com/id/" class="flex ms-2 md:me-24">
             <img
-              src="../../public/Gajah_Tunggal.png"
+              src="./../assets/Gajah_Tunggal.png"
               class="h-8 me-3"
               alt="GT Logo"
             />

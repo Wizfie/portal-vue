@@ -133,6 +133,7 @@ const getRegisteredById = async () => {
   try {
     const result = await axios.get(`/registration/${registrationId.value}`);
     registeredData.value = result.data;
+    console.log(registeredData.value);
   } catch (error) {
     console.error("Failed to get RegisteredById: " + error);
   }
@@ -238,22 +239,6 @@ const handleFileChange = (event, stage) => {
             </li>
           </ul>
         </div>
-      </div>
-      <!-- Button Group -->
-
-      <div class="inline-flex rounded-md shadow-sm mt-3" role="group">
-        <button
-          type="button"
-          class="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border border-gray-900 rounded-s-lg hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700"
-        >
-          Upload
-        </button>
-        <button
-          type="button"
-          class="px-4 py-2 text-sm font-medium text-gray-900 bg-transparent border border-gray-900 rounded-e-lg hover:bg-gray-900 hover:text-white focus:z-10 focus:ring-2 focus:ring-gray-500 focus:bg-gray-900 focus:text-white dark:border-white dark:text-white dark:hover:text-white dark:hover:bg-gray-700 dark:focus:bg-gray-700"
-        >
-          Downloads
-        </button>
       </div>
 
       <!-- Form Upload -->
