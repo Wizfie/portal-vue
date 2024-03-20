@@ -67,15 +67,15 @@ const Logout = async () => {
               ></path>
             </svg>
           </button>
-          <a href="https://flowbite.com" class="flex ms-2 md:me-24">
+          <a href="https://www.gt-tires.com/id/" class="flex ms-2 md:me-24">
             <img
-              src="https://flowbite.com/docs/images/logo.svg"
+              src="../../public/Gajah_Tunggal.png"
               class="h-8 me-3"
-              alt="FlowBite Logo"
+              alt="GT Logo"
             />
             <span
               class="self-center text-xl font-semibold sm:text-2xl whitespace-nowrap dark:text-black"
-              >Logistic</span
+              >GT Logistic</span
             >
           </a>
         </div>

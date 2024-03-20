@@ -24,10 +24,7 @@ const currentStageId = ref(null);
 
 const currentDate = new Date();
 const currentYear = currentDate.getFullYear().toString();
-// const currentMonth = (currentDate.getMonth() + 1).toString().padStart(2, "0");
-// const currentDay = currentDate.getDate().toString().padStart(2, "0");
-// const currentDateString = `${currentYear}-${currentMonth}-${currentDay}`;
-// Fungsi untuk menambahkan langkah-langkah baru
+
 const addStep = () => {
   steps.value.push({ name: "", startDate: "", endDate: "", description: "" });
 };
@@ -89,6 +86,7 @@ const createEvent = async () => {
     console.log(eventId);
 
     // Tambahkan langkah-langkah
+    const stepPromises = [];
     for (const step of steps.value) {
       const stepData = {
         stepName: step.name,
@@ -96,32 +94,24 @@ const createEvent = async () => {
         endDate: step.endDate,
         description: step.description,
       };
-      await axios.post(`/step/add/${eventId}`, stepData, {
+      const stepPromise = axios.post(`/step/add/${eventId}`, stepData, {
         headers: {
           Authorization: token,
         },
       });
+      stepPromises.push(stepPromise);
     }
 
-    const emailData = {
-      to: "wizfiee@gmail.com",
-      from: "wizfie@outlook.com",
-      subject: "Event Baru",
-      name: username.value,
-      text: `Event ${eventName.value} Sudah Buka Pendaftarannya silahkan cek di Web `,
-    };
+    // Tunggu semua permintaan langkah selesai
+    await Promise.all(stepPromises);
 
-    const email = await axios.post("/email/send", emailData, {
-      headers: {
-        Authorization: token,
-      },
-    });
-    console.log(email.data);
-    // Reset form
+    // Jika semua permintaan berhasil, reset form dan beri pemberitahuan
     resetForm();
     alert("Event and steps created successfully");
   } catch (error) {
-    console.error("Create Team:", error);
+    console.error("Error:", error);
+    // Jika ada kesalahan, tampilkan pesan kesalahan
+    alert("Failed to create event and steps. Please try again.");
   }
 };
 
@@ -422,73 +412,132 @@ const getRegistration = () => {
                     <div class="col-span-2">
                       <strong class="underline">Steps</strong>
                     </div>
-                    <div
-                      class="col-span-2"
-                      v-for="(step, index) in steps"
-                      :key="index"
-                    >
-                      <label
-                        for="step"
-                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                      >
-                        Step Name</label
-                      >
-                      <input
-                        v-model="step.name"
-                        required
-                        type="text"
-                        id="step"
-                        class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        placeholder="Name Steps"
-                      />
-                      <div class="flex gap-2">
-                        <div class="w-full">
-                          <label
-                            for="start-date"
-                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                          >
-                            Start Date
-                          </label>
-                          <input
-                            v-model="step.startDate"
-                            required
-                            type="date"
-                            id="start-date"
-                            class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                          />
+                    <!-- Form untuk step pertama -->
+                    <div v-if="steps.length === 0">
+                      <div class="col-span-2">
+                        <label
+                          for="step"
+                          class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                          >Step Name</label
+                        >
+                        <input
+                          v-model="steps[0].name"
+                          required
+                          type="text"
+                          id="step"
+                          class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                          placeholder="Name Steps"
+                        />
+                        <div class="flex gap-2">
+                          <div class="w-full">
+                            <label
+                              for="start-date"
+                              class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              >Start Date</label
+                            >
+                            <input
+                              v-model="steps[0].startDate"
+                              required
+                              type="date"
+                              id="start-date"
+                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            />
+                          </div>
+                          <div class="w-full">
+                            <label
+                              for="end-date"
+                              class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              >End Date</label
+                            >
+                            <input
+                              v-model="steps[0].endDate"
+                              required
+                              type="date"
+                              id="end-date"
+                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            />
+                          </div>
                         </div>
-                        <div class="w-full">
-                          <label
-                            for="end-date"
-                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                          >
-                            End Date
-                          </label>
-                          <input
-                            v-model="step.endDate"
-                            required
-                            type="date"
-                            id="end-date"
-                            class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                          />
-                        </div>
+                        <label
+                          for="description"
+                          class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                          >Description</label
+                        >
+                        <textarea
+                          v-model="steps[0].description"
+                          required
+                          id="description"
+                          class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                          placeholder="Description"
+                        ></textarea>
+                        <hr class="mb-3" />
                       </div>
-                      <label
-                        for="description"
-                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
-                      >
-                        Description</label
-                      >
-                      <textarea
-                        v-model="step.description"
-                        required
-                        id="description"
-                        class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                        placeholder="Description"
-                      ></textarea>
-                      <hr class="mb-3" />
+                    </div>
+
+                    <!-- Form untuk step tambahan -->
+                    <div v-for="(step, index) in steps.slice(1)" :key="index">
+                      <div class="col-span-2">
+                        <label
+                          for="step"
+                          class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                          >Step Name</label
+                        >
+                        <input
+                          v-model="step.name"
+                          required
+                          type="text"
+                          id="step"
+                          class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                          placeholder="Name Steps"
+                        />
+                        <div class="flex gap-2">
+                          <div class="w-full">
+                            <label
+                              for="start-date"
+                              class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              >Start Date</label
+                            >
+                            <input
+                              v-model="step.startDate"
+                              required
+                              type="date"
+                              id="start-date"
+                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            />
+                          </div>
+                          <div class="w-full">
+                            <label
+                              for="end-date"
+                              class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                              >End Date</label
+                            >
+                            <input
+                              v-model="step.endDate"
+                              required
+                              type="date"
+                              id="end-date"
+                              class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                            />
+                          </div>
+                        </div>
+                        <label
+                          for="description"
+                          class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+                          >Description</label
+                        >
+                        <textarea
+                          v-model="step.description"
+                          required
+                          id="description"
+                          class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+                          placeholder="Description"
+                        ></textarea>
+                        <hr class="mb-3" />
+                      </div>
                     </div>
                   </div>
+
+                  <!-- Tombol untuk menambahkan step -->
                   <div>
                     <button
                       class="text-white inline-flex items-center mb-3 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
@@ -518,7 +567,7 @@ const getRegistration = () => {
         </div>
       </div>
       <div
-        v-show="role === USER"
+        v-show="role === `USER`"
         class="p-4 border-2 border-gray-200 border-opacity-100 rounded-lg dark:border-gray-700 mt-5"
       >
         <div>
@@ -640,7 +689,6 @@ const getRegistration = () => {
         </div>
       </div>
 
-      <router-view></router-view>
       <div
         class="p-4 border-2 border-gray-200 border-opacity-100 rounded-lg dark:border-gray-700 mt-5"
       >

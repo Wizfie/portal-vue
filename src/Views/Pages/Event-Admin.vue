@@ -146,7 +146,19 @@
                       >
                     </td>
                     <td class="px-6 py-4 bg-white border-2 hover:bg-gray-50">
-                      <div class="flex gap-3 justify-center">
+                      <div
+                        v-if="file.approvalStatus === `APPROVE`"
+                        class="text-center"
+                      >
+                        <strong>DONE</strong>
+                      </div>
+                      <div
+                        v-else-if="file.approvalStatus === `REJECT`"
+                        class="text-center"
+                      >
+                        <strong>REJECT</strong>
+                      </div>
+                      <div v-else class="flex gap-3 justify-center">
                         <button
                           @click="approveFile(file.filesId)"
                           class="p-4 font-medium text-white bg-blue-500 rounded-md"
@@ -157,6 +169,8 @@
                           @click="showRejectModal(file.filesId)"
                           class="block text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800"
                           type="button"
+                          data-modal-target="reject-modal"
+                          data-modal-show="reject-modal"
                         >
                           Reject
                         </button>

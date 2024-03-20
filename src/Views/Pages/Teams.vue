@@ -7,8 +7,8 @@ import SidebarWithNavbarVue from "../../components/SidebarWithNavbar.vue";
 const teamName = ref("");
 const description = ref("");
 const events = ref([]);
-const userData = ref("");
-const store = useStore();
+const userId = ref();
+const role = ref(null);
 
 // Registeam
 
@@ -22,7 +22,13 @@ const filteredTeams = ref([]);
 const currentDate = new Date();
 const currentYear = currentDate.getFullYear().toString();
 onMounted(() => {
-  userData.value = store.getters.getUserData;
+  const userData = localStorage.getItem("userData");
+  if (userData) {
+    const parseJson = JSON.parse(userData);
+    userId.value = parseJson.id.toString();
+    role.value = parseJson.role;
+  }
+  console.log(userId.value);
   getEvents();
   getTeams();
 });
@@ -42,16 +48,8 @@ const getTeams = () => {
   axios
     .get("/team/get-all")
     .then((response) => {
-      // Assign data dari response ke filteredTeams.value
-      filteredTeams.value = response.data;
-
-      // Sekarang Anda bisa melakukan filtering
-      const currentYear = new Date().getFullYear();
-      filteredTeams.value = filteredTeams.value.filter((teamObj) => {
-        const teamCreatedAtYear = new Date(
-          teamObj.team.createdAt
-        ).getFullYear();
-        return teamCreatedAtYear === currentYear;
+      filteredTeams.value = response.data.filter((filter) => {
+        return filter.team.userId === userId.value;
       });
 
       console.log(filteredTeams.value);
@@ -103,6 +101,13 @@ const registerTeam = async () => {
   } catch (error) {
     console.error("Registeam" + error);
   }
+};
+
+const getTeam = async () => {
+  try {
+    const response = await axios.get("/team/get");
+    console.log(response.data);
+  } catch (error) {}
 };
 </script>
 
@@ -401,7 +406,7 @@ const registerTeam = async () => {
             </thead>
             <tbody>
               <tr
-                v-for="(team, index) in filteredTeam"
+                v-for="(team, index) in filteredTeams"
                 :key="index"
                 class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
               >
@@ -410,9 +415,9 @@ const registerTeam = async () => {
                   scope="row"
                   class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                 >
-                  {{ team.nameTeam }}
+                  {{ team.team.teamName }}
                 </th>
-                <td class="px-6 py-4">
+                <!-- <td class="px-6 py-4">
                   <router-link
                     :to="{ name: 'members', params: { teamId: team.idTeam } }"
                     type="button"
@@ -420,7 +425,7 @@ const registerTeam = async () => {
                   >
                     View
                   </router-link>
-                </td>
+                </td> -->
               </tr>
             </tbody>
           </table>
