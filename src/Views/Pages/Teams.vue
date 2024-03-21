@@ -1,7 +1,6 @@
 <script setup>
 import axios from "axios";
-import { computed, onMounted, ref } from "vue";
-import { useStore } from "vuex";
+import { onMounted, ref } from "vue";
 import SidebarWithNavbarVue from "../../components/SidebarWithNavbar.vue";
 
 const teamName = ref("");
@@ -17,7 +16,7 @@ const selectedTeam = ref("");
 const memberName = ref("");
 const memberPosition = ref("");
 
-const filteredTeams = ref([]);
+const teams = ref([]);
 
 const currentDate = new Date();
 const currentYear = currentDate.getFullYear().toString();
@@ -30,7 +29,7 @@ onMounted(() => {
   }
   console.log(userId.value);
   getEvents();
-  getTeams();
+  getTeam();
 });
 
 const getEvents = () => {
@@ -44,21 +43,21 @@ const getEvents = () => {
   });
 };
 
-const getTeams = () => {
-  axios
-    .get("/team/get-all")
-    .then((response) => {
-      filteredTeams.value = response.data.filter((filter) => {
-        return filter.team.userId === userId.value;
-      });
+// const getTeams = () => {
+//   axios
+//     .get("/team/get-all")
+//     .then((response) => {
+//       filteredTeams.value = response.data.filter((filter) => {
+//         return filter.team.userId === userId.value;
+//       });
 
-      console.log(filteredTeams.value);
-    })
-    .catch((error) => {
-      // Handle error jika terjadi
-      console.error("Error fetching teams:", error);
-    });
-};
+//       console.log(filteredTeams.value);
+//     })
+//     .catch((error) => {
+//       // Handle error jika terjadi
+//       console.error("Error fetching teams:", error);
+//     });
+// };
 
 const createTeam = async () => {
   const now = new Date();
@@ -106,8 +105,11 @@ const registerTeam = async () => {
 const getTeam = async () => {
   try {
     const response = await axios.get("/team/get");
-    console.log(response.data);
-  } catch (error) {}
+    teams.value = response.data;
+    console.log(teams.value);
+  } catch (error) {
+    console.error("Get TEAM : " + error);
+  }
 };
 </script>
 
@@ -299,15 +301,15 @@ const getTeam = async () => {
                               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             >
                               <option disabled>Select Team</option>
-                              <template v-if="filteredTeams.length === 0">
+                              <template v-if="teams.length === 0">
                                 <option disabled>Belum Ada Team</option>
                               </template>
                               <option
-                                v-for="team in filteredTeams"
-                                :key="team.team.teamId"
-                                :value="team.team.teamId"
+                                v-for="(team, index) in teams"
+                                :key="index"
+                                :value="team.teamId"
                               >
-                                {{ team.team.teamName }}
+                                {{ team.teamName }}
                               </option>
                             </select>
                           </div>
@@ -388,6 +390,7 @@ const getTeam = async () => {
           </div>
         </div>
 
+        <!-- table -->
         <div class="relative overflow-x-auto shadow-md sm:rounded-lg mt-5">
           <table
             class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400"
@@ -398,15 +401,12 @@ const getTeam = async () => {
               <tr>
                 <th scope="col" class="px-6 py-3">No</th>
                 <th scope="col" class="px-6 py-3">Team Name</th>
-                <th scope="col" class="px-6 py-3">Team Member</th>
-                <th scope="col" class="px-6 py-3">
-                  <span class="sr-only">View</span>
-                </th>
+                <th scope="col" class="px-6 py-3">Info</th>
               </tr>
             </thead>
             <tbody>
               <tr
-                v-for="(team, index) in filteredTeams"
+                v-for="(team, index) in teams"
                 :key="index"
                 class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
               >
@@ -415,17 +415,15 @@ const getTeam = async () => {
                   scope="row"
                   class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white"
                 >
-                  {{ team.team.teamName }}
+                  {{ team.teamName }}
                 </th>
-                <!-- <td class="px-6 py-4">
+                <td class="px-6 py-4">
                   <router-link
-                    :to="{ name: 'members', params: { teamId: team.idTeam } }"
-                    type="button"
-                    class="font-medium text-blue-600 dark:text-blue-500 hover:underline"
+                    to=""
+                    class="text-blue-600 font-medium rounded-sm hover:underline"
+                    >Details</router-link
                   >
-                    View
-                  </router-link>
-                </td> -->
+                </td>
               </tr>
             </tbody>
           </table>

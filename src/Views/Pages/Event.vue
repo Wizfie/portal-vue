@@ -9,7 +9,6 @@ const token = "Bearer " + localStorage.getItem("authToken");
 const role = ref("");
 const userId = ref("");
 
-// Variable
 const eventName = ref("");
 const eventYear = ref("");
 const steps = ref([]);
