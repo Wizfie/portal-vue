@@ -43,22 +43,6 @@ const getEvents = () => {
   });
 };
 
-// const getTeams = () => {
-//   axios
-//     .get("/team/get-all")
-//     .then((response) => {
-//       filteredTeams.value = response.data.filter((filter) => {
-//         return filter.team.userId === userId.value;
-//       });
-
-//       console.log(filteredTeams.value);
-//     })
-//     .catch((error) => {
-//       // Handle error jika terjadi
-//       console.error("Error fetching teams:", error);
-//     });
-// };
-
 const createTeam = async () => {
   const now = new Date();
   const teamData = {
@@ -104,8 +88,10 @@ const registerTeam = async () => {
 
 const getTeam = async () => {
   try {
-    const response = await axios.get("/team/get");
-    teams.value = response.data;
+    const response = await axios.get("/team/with-member");
+    teams.value = response.data.filter((item) => {
+      return item.userId === userId.value;
+    });
     console.log(teams.value);
   } catch (error) {
     console.error("Get TEAM : " + error);
@@ -401,7 +387,7 @@ const getTeam = async () => {
               <tr>
                 <th scope="col" class="px-6 py-3">No</th>
                 <th scope="col" class="px-6 py-3">Team Name</th>
-                <th scope="col" class="px-6 py-3">Info</th>
+                <th scope="col" class="px-6 py-3">Action</th>
               </tr>
             </thead>
             <tbody>
@@ -419,7 +405,12 @@ const getTeam = async () => {
                 </th>
                 <td class="px-6 py-4">
                   <router-link
-                    to=""
+                    :to="{
+                      name: 'teams-details',
+                      params: {
+                        teamId: team.teamId,
+                      },
+                    }"
                     class="text-blue-600 font-medium rounded-sm hover:underline"
                     >Details</router-link
                   >
