@@ -17,18 +17,18 @@ onMounted(() => {
   console.log(userData.value);
   teamId.value = route.params.teamId;
   console.log(teamId.value);
-  getTeam();
+  fetchTeam();
 });
 
-const getTeam = async () => {
+const fetchTeam = async () => {
   try {
-    const response = await axios.get("/team/with-member");
-    teams.value = response.data.filter((item) => {
-      return item.userId == userData.value.id && item.teamId == teamId.value;
-    });
+    const { data } = await axios.get("/team/with-member");
+    teams.value = data.filter(
+      (team) => team.userId == userData.value.id && team.teamId == teamId.value
+    );
     console.log(teams.value);
   } catch (error) {
-    console.error("Get TEAM : " + error);
+    console.error("Failed to fetch team");
   }
 };
 
@@ -56,7 +56,7 @@ const deleteMember = async (memberId) => {
     try {
       const response = await axios.delete(`/member/${memberId}`);
       console.log(response.data);
-      getTeam();
+      fetchTeam();
       alert(response.data);
     } catch (ex) {
       console.error("Error DELETE :" + ex);
@@ -191,7 +191,7 @@ const deleteMember = async (memberId) => {
                             </h3>
                             <button
                               type="button"
-                              @click="getTeam()"
+                              @click="fetchTeam()"
                               class="end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white"
                               data-modal-hide="edit-modal"
                             >

@@ -33,7 +33,7 @@ onMounted(() => {
     userId.value = parseJson.id.toString();
   }
   getEvents();
-  getTeams();
+  fetchTeams();
   getRegistration();
 });
 
@@ -43,94 +43,85 @@ const resetForm = () => {
   steps.value = [];
 };
 
-const registration = async () => {
+const registerTeam = async () => {
   try {
-    const RegisterData = {
+    const registrationData = {
       teamId: selectedTeam.value,
       eventId: selectedEvent.value,
       registrationStatus: "Pending",
       createdBy: userId.value,
     };
 
-    const response = await axios.post("/registration/register", RegisterData);
+    await axios.post("/registration/register", registrationData);
 
-    alert(response.data);
-    getRegistration()((selectedEvent.value = "")), (selectedTeam.value = "");
-  } catch (ex) {
-    console.log("FAIL REGISTER " + ex);
+    getRegistration();
+
+    alert("Registration Successful");
+
+    selectedEvent.value = "";
+    selectedTeam.value = "";
+  } catch (error) {
+    console.error("Failed to register team:", error);
   }
 };
 
 const createEvent = async () => {
   try {
-    // Buat event
-
     if (steps.value.length === 0) {
-      // Jika tidak ada langkah yang ditambahkan, tampilkan pesan kesalahan
-      alert("Steps event wajib di tambahkan");
+      alert("Please add steps to the event");
       return;
     }
+
     const eventData = {
       eventName: eventName.value,
       eventYear: eventYear.value,
     };
-    const eventResponse = await axios.post("event/create-event", eventData, {
-      headers: {
-        Authorization: token,
-      },
-    });
-    const eventId = eventResponse.data.eventId;
-    console.log(eventResponse.data);
-    console.log(eventId);
 
-    // Tambahkan langkah-langkah
-    const stepPromises = [];
-    for (const step of steps.value) {
-      const stepData = {
-        stepName: step.name,
-        startDate: step.startDate,
-        endDate: step.endDate,
-        description: step.description,
-      };
-      const stepPromise = axios.post(`/step/add/${eventId}`, stepData, {
-        headers: {
-          Authorization: token,
-        },
-      });
-      stepPromises.push(stepPromise);
-    }
+    const { data: eventId } = await axios.post(
+      "event/create-event",
+      eventData,
+      {
+        headers: { Authorization: token },
+      }
+    );
 
-    // Tunggu semua permintaan langkah selesai
+    const stepPromises = steps.value.map(
+      ({ name, startDate, endDate, description }) => {
+        const stepData = { stepName: name, startDate, endDate, description };
+        return axios.post(`/step/add/${eventId}`, stepData, {
+          headers: { Authorization: token },
+        });
+      }
+    );
+
     await Promise.all(stepPromises);
 
-    // Jika semua permintaan berhasil, reset form dan beri pemberitahuan
-    resetForm();
     alert("Event and steps created successfully");
-  } catch (error) {
-    console.error("Error:", error);
-    // Jika ada kesalahan, tampilkan pesan kesalahan
+    resetForm();
+  } catch {
     alert("Failed to create event and steps. Please try again.");
   }
 };
 
 const createStage = async () => {
-  //
+  const data = {
+    name: stageName.value,
+    description: stageDesc.value,
+    eventId: eventIdStage.value,
+  };
+
   try {
-    const stageData = {
-      stageName: stageName.value,
-      description: stageDesc.value,
-      event: {
-        eventId: eventIdStage.value,
-      },
-    };
-    const stageResult = await axios.post("/event-stage/create", stageData);
-    console.log(stageResult.data);
-    alert(`Stages ${stageName.value}  Created`);
-    stageName.value = "";
-    stageDesc.value = "";
+    const { data: createdStage } = await axios.post(
+      "/event-stage/create",
+      data
+    );
+    alert(`Stage ${createdStage.name} created`);
   } catch (error) {
-    console.error("CREATE STAGE" + error);
+    console.error("Failed to create stage", error);
   }
+
+  stageName.value = "";
+  stageDesc.value = "";
 };
 
 const getEvents = () => {
@@ -144,26 +135,15 @@ const getEvents = () => {
   });
 };
 
-const getTeams = () => {
-  axios
-    .get("/team/get-all")
-    .then((response) => {
-      // Assign data dari response ke filteredTeams.value
-      filteredTeams.value = response.data;
-      console.log(filteredTeams.value);
-
-      // Sekarang Anda bisa melakukan filtering
-      const currentYear = new Date().getFullYear();
-      filteredTeams.value = filteredTeams.value.filter((event) => {
-        return event.team.userId === userId.value;
-      });
-
-      console.log(filteredTeams.value);
-    })
-    .catch((error) => {
-      // Handle error jika terjadi
-      console.error("Error fetching teams:", error);
-    });
+const fetchTeams = async () => {
+  try {
+    const { data } = await axios.get("/team/get-all");
+    filteredTeams.value = data.filter(
+      (team) => team.team.userId === userId.value
+    );
+  } catch (error) {
+    console.error("Error fetching teams:", error);
+  }
 };
 
 const getRegistration = () => {
@@ -588,7 +568,7 @@ const removeStep = () => {
                   </button>
                 </div>
                 <!-- Modal body -->
-                <form @submit.prevent="registration" class="p-4 md:p-5">
+                <form @submit.prevent="registerTeam" class="p-4 md:p-5">
                   <div class="grid gap-4 mb-4 grid-cols-2">
                     <div class="col-span-2">
                       <label
