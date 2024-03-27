@@ -2,16 +2,16 @@
 
 import { createRouter, createWebHistory } from "vue-router";
 
+import isAuthenticated from "./routeGuards";
 import login from "@/Views/Auth/Login.vue";
 import register from "@/Views/Auth/Register.vue";
 import dashboard from "@/Views/Pages/Dashboard.vue";
-import isAuthenticated from "./routeGuards";
 import profile from "@/Views/Pages/Profile.vue";
 import teams from "@/Views/Pages/Teams.vue";
 import teamsDetail from "@/Views/Pages/TeamsDetails.vue";
 import event from "@/Views/Pages/Event.vue";
 import eventDetail from "@/Views/Pages/Event-Details.vue";
-import eventAdmin from "@/Views/Pages/Event-Admin.vue";
+import panelAdmin from "@/Views/Pages/Admin.vue";
 
 const routes = [
   {
@@ -63,9 +63,9 @@ const routes = [
     beforeEnter: isAuthenticated,
   },
   {
-    path: "/event/admin",
-    name: "eventAdmin",
-    component: eventAdmin,
+    path: "/admin",
+    name: "panelAdmin",
+    component: panelAdmin,
     beforeEnter: isAuthenticated,
   },
 ];

@@ -30,6 +30,34 @@
 
     <div class="w-full h-full p-4 sm:ml-64 dark:bg-gray-700 dark:text-white">
       <div
+        class="text-sm font-medium text-center mt-10 text-gray-500 border-b border-gray-200 dark:text-gray-400 dark:border-gray-700"
+      >
+        <ul class="flex flex-wrap -mb-px">
+          <li class="me-2">
+            <a
+              href="#"
+              class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
+              >Registration</a
+            >
+          </li>
+          <li class="me-2">
+            <a
+              href="#"
+              class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
+              >Teams</a
+            >
+          </li>
+          <li class="me-2">
+            <a
+              href="#"
+              class="inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300"
+              >Users</a
+            >
+          </li>
+        </ul>
+      </div>
+
+      <div
         class="p-4 border-2 border-gray-200 border-opacity-100 rounded-lg dark:border-gray-700 mt-14"
       >
         <div>
